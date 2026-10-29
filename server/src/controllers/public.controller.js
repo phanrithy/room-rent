@@ -100,6 +100,13 @@ export class PublicController {
         throw new NotFoundError('Selected room was not found', 'ROOM_NOT_FOUND');
       }
 
+      if (room.status !== 'available') {
+        throw new BadRequestError(
+          `Room #${room.roomNumber} is currently ${room.status} and is not available for rental applications`,
+          'ROOM_NOT_AVAILABLE'
+        );
+      }
+
       // 1. Find or create tenant record
       const cleanPhone = phone.trim();
       let tenant = tenantRepository.findByPhone(cleanPhone);

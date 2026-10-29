@@ -11,8 +11,17 @@ describe('Public QR Self-Registration & Phone Login API', () => {
   before(async () => {
     await seedDatabase({ demo: true });
     const db = getDb();
-    db.prepare("DELETE FROM users WHERE username LIKE '099%'").run();
-    db.prepare("DELETE FROM tenants WHERE phone LIKE '099%'").run();
+    const tIds = db.prepare("SELECT id FROM tenants WHERE phone LIKE '099%'").all().map((r) => r.id);
+    for (const tid of tIds) {
+      db.prepare("DELETE FROM invoice_items WHERE invoice_id IN (SELECT id FROM invoices WHERE contract_id IN (SELECT id FROM contracts WHERE tenant_id = ?))").run(tid);
+      db.prepare("DELETE FROM payments WHERE invoice_id IN (SELECT id FROM invoices WHERE contract_id IN (SELECT id FROM contracts WHERE tenant_id = ?))").run(tid);
+      db.prepare("DELETE FROM invoices WHERE contract_id IN (SELECT id FROM contracts WHERE tenant_id = ?)").run(tid);
+      db.prepare("DELETE FROM documents WHERE tenant_id = ? OR contract_id IN (SELECT id FROM contracts WHERE tenant_id = ?)").run(tid, tid);
+      db.prepare("DELETE FROM contracts WHERE tenant_id = ?").run(tid);
+      db.prepare("DELETE FROM room_applications WHERE tenant_id = ?").run(tid);
+      db.prepare("DELETE FROM users WHERE tenant_id = ?").run(tid);
+      db.prepare("DELETE FROM tenants WHERE id = ?").run(tid);
+    }
 
     const app = createApp();
     await new Promise((resolve) => {
@@ -46,12 +55,17 @@ describe('Public QR Self-Registration & Phone Login API', () => {
   });
 
   test('POST /api/public/apply registers new tenant and creates user account', async () => {
+    // Pick an available room for application
+    const availRes = await fetch(`${baseUrl}/api/public/rooms`);
+    const availData = await availRes.json();
+    const availableRoom = availData.rooms[0] || { roomNumber: '204' };
+
     const phone = '099887766';
     const applyPayload = {
       name: 'Chamroeun Heng',
       phone,
       idNumber: 'ID0998877',
-      roomId: '101',
+      roomId: String(availableRoom.roomNumber),
       email: 'chamroeun@example.com',
     };
 

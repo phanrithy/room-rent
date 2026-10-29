@@ -38,6 +38,19 @@ describe('Phase 8: Tenant Portal, Maintenance, Reminders, and Bakong KHQR Level 
     });
     staffToken = (await resStaff.json()).token;
 
+    // Ensure sokha has an active contract for tenant portal tests
+    const sokhaTenant = db.prepare("SELECT tenant_id FROM users WHERE username = 'sokha'").get();
+    if (sokhaTenant) {
+      const existingActive = db.prepare("SELECT id FROM contracts WHERE tenant_id = ? AND status = 'active'").get(sokhaTenant.tenant_id);
+      if (!existingActive) {
+        const freeRoom = db.prepare("SELECT id FROM rooms WHERE status = 'available'").get();
+        if (freeRoom) {
+          db.prepare("INSERT INTO contracts (room_id, tenant_id, start_date, end_date, deposit, rent_amount, status) VALUES (?, ?, '2026-08-01', '2027-08-01', 15000, 15000, 'active')").run(freeRoom.id, sokhaTenant.tenant_id);
+          db.prepare("UPDATE rooms SET status = 'occupied' WHERE id = ?").run(freeRoom.id);
+        }
+      }
+    }
+
     const resTenant = await fetch(`${baseUrl}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

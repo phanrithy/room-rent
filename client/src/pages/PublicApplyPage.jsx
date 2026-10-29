@@ -296,7 +296,40 @@ export function PublicApplyPage() {
           /* Application Form */
           <div className="bg-surface border border-border rounded-2xl p-6 sm:p-8 shadow-md space-y-6">
             {/* Target Room Banner */}
-            {roomDetails ? (
+            {roomDetails && roomDetails.status !== 'available' ? (
+              <div className="p-5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-center space-y-2.5">
+                <AlertCircle className="w-8 h-8 mx-auto text-amber-500" />
+                <h3 className="text-base font-bold text-content-primary">
+                  {i18n.language === 'km'
+                    ? `បន្ទប់ #${roomDetails.roomNumber} មិនទំនេរទេ`
+                    : `Room #${roomDetails.roomNumber} is Not Available`}
+                </h3>
+                <p className="text-xs text-content-muted">
+                  {i18n.language === 'km'
+                    ? `បន្ទប់នេះបច្ចុប្បន្នត្រូវបានជួលរួចហើយ ឬកំពុងជួសជុល (${roomDetails.status})។`
+                    : `This room is currently ${roomDetails.status} and cannot accept new rental applications.`}
+                </p>
+                {availableRooms.length > 0 ? (
+                  <div className="pt-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="primary"
+                      onClick={() => {
+                        setSelectedRoomId(String(availableRooms[0].id));
+                        setRoomDetails(availableRooms[0]);
+                      }}
+                    >
+                      {i18n.language === 'km' ? `ប្តូរទៅបន្ទប់ #${availableRooms[0].roomNumber} ដែលទំនេរ` : `Switch to Available Room #${availableRooms[0].roomNumber}`}
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="text-xs text-danger font-semibold">
+                    {i18n.language === 'km' ? 'បច្ចុប្បន្នគ្មានបន្ទប់ទំនេរនៅក្នុងអគារទេ' : 'No rooms currently available in building'}
+                  </p>
+                )}
+              </div>
+            ) : roomDetails ? (
               <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-between">
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
@@ -335,7 +368,8 @@ export function PublicApplyPage() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            {(!roomDetails || roomDetails.status === 'available') && (
+              <form onSubmit={handleSubmit} className="space-y-4">
               {/* Full Name */}
               <Input
                 label={i18n.language === 'km' ? 'ឈ្មោះពេញរបស់អ្នកជួល' : 'Tenant Full Name'}
@@ -445,6 +479,7 @@ export function PublicApplyPage() {
                   : (i18n.language === 'km' ? 'ដាក់ពាក្យស្នើសុំជួល' : 'Submit Rental Application')}
               </Button>
             </form>
+          )}
           </div>
         )}
       </main>

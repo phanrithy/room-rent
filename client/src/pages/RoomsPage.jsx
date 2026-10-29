@@ -285,15 +285,18 @@ export function RoomsPage() {
             </Button>
           )}
 
+          {r.status === 'available' && (
+            <IconButton
+              icon={QrCode}
+              label="Scan to Rent QR Poster"
+              size="sm"
+              variant="ghost"
+              onClick={() => setQrModalRoom(r)}
+            />
+          )}
+
           {isAdmin && (
             <>
-              <IconButton
-                icon={QrCode}
-                label="Scan to Rent QR Poster"
-                size="sm"
-                variant="ghost"
-                onClick={() => setQrModalRoom(r)}
-              />
               <IconButton
                 icon={Wrench}
                 label="Toggle Maintenance"
@@ -538,8 +541,8 @@ export function RoomsPage() {
                   {/* Bottom: Action buttons */}
                   <div className="pt-2 border-t border-border flex items-center justify-between gap-1">
                     {room.status === 'available' ? (
-                      isAdmin ? (
-                        <div className="flex items-center gap-1.5 w-full">
+                      <div className="flex items-center gap-1.5 w-full">
+                        {isAdmin && (
                           <Button
                             variant="primary"
                             size="sm"
@@ -549,26 +552,44 @@ export function RoomsPage() {
                           >
                             {t('rooms.quickContract')}
                           </Button>
-                          <IconButton
-                            icon={QrCode}
-                            label="Scan to Rent QR Poster"
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setQrModalRoom(room)}
-                          />
-                        </div>
-                      ) : (
-                        <span className="text-xs text-success font-medium">Available</span>
-                      )
-                    ) : (
-                      <div className="flex items-center gap-1 w-full justify-end">
+                        )}
                         <IconButton
                           icon={QrCode}
                           label="Scan to Rent QR Poster"
                           size="sm"
-                          variant="ghost"
+                          variant={isAdmin ? 'outline' : 'primary'}
                           onClick={() => setQrModalRoom(room)}
                         />
+                        {isAdmin && (
+                          <>
+                            <IconButton
+                              icon={Wrench}
+                              label="Maintenance"
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleToggleMaintenance(room)}
+                            />
+                            <IconButton
+                              icon={Edit}
+                              label={t('common.edit')}
+                              size="sm"
+                              onClick={() => openEditModal(room)}
+                            />
+                            {!room.activeContractId && (
+                              <IconButton
+                                icon={Trash2}
+                                label={t('common.delete')}
+                                size="sm"
+                                variant="danger"
+                                onClick={() => setDeletingRoom(room)}
+                              />
+                            )}
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 w-full justify-end">
+                        {/* Only available rooms have QR code for scan-to-rent */}
                         {isAdmin && (
                           <>
                             <IconButton
