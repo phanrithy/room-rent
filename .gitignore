@@ -15,6 +15,10 @@ data/*.db
 data/*.db-wal
 data/*.db-shm
 data/*.db-journal
+**/data/*.db
+**/data/*.db-wal
+**/data/*.db-shm
+**/data/*.db-journal
 
 # Uploads
 uploads/*
