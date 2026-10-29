@@ -1,0 +1,35 @@
+{
+  "name": "room-rent-server",
+  "version": "1.0.0",
+  "description": "Room Rent Management Backend API",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "migrate": "node src/db/migrator.js",
+    "seed": "node src/db/seed.js",
+    "seed:demo": "node src/db/seed.js --demo",
+    "seed:clean": "node src/db/seed.js --clean",
+    "test": "node --test test/**/*.test.js",
+    "lint": "eslint src/ test/"
+  },
+  "dependencies": {
+    "bakong-khqr": "^1.0.12",
+    "bcrypt": "^5.1.1",
+    "better-sqlite3": "^11.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "exceljs": "^4.4.0",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.3",
+    "pdfkit": "^0.16.0",
+    "qrcode": "^1.5.4",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "eslint": "^9.20.0"
+  }
+}
