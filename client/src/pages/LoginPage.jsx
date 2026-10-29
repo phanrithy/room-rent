@@ -30,14 +30,20 @@ export function LoginPage() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: '',
-      password: '',
+      username: 'admin',
+      password: 'Admin#2026!',
     },
   });
+
+  const handleFillDemo = (username, password) => {
+    setValue('username', username, { shouldValidate: true });
+    setValue('password', password, { shouldValidate: true });
+  };
 
   const onSubmit = async (data) => {
     setLoading(true);
@@ -152,10 +158,35 @@ export function LoginPage() {
             </Button>
           </form>
 
-          {/* Quick Demo Hint */}
-          <div className="mt-6 p-3 rounded-lg bg-surface-subtle border border-border text-xs text-content-muted text-center space-y-1">
-            <p className="font-semibold text-content-secondary">Demo Login:</p>
-            <p>Admin: <code className="font-mono text-primary">admin</code> / <code className="font-mono text-primary">Admin#2026!</code></p>
+          {/* Quick 1-Click Demo Login Selector */}
+          <div className="mt-6 p-3.5 rounded-xl bg-surface-subtle border border-border text-xs text-content-muted text-center space-y-2">
+            <p className="font-semibold text-content-secondary">1-Click Demo Account Autofill:</p>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => handleFillDemo('admin', 'Admin#2026!')}
+                className="px-2.5 py-1.5 rounded-lg bg-surface border border-border hover:border-primary hover:text-primary transition-colors font-semibold text-content-primary"
+              >
+                Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => handleFillDemo('staff', 'Staff#2026!')}
+                className="px-2.5 py-1.5 rounded-lg bg-surface border border-border hover:border-primary hover:text-primary transition-colors font-semibold text-content-primary"
+              >
+                Staff
+              </button>
+              <button
+                type="button"
+                onClick={() => handleFillDemo('sokha', 'Tenant#2026!')}
+                className="px-2.5 py-1.5 rounded-lg bg-surface border border-border hover:border-primary hover:text-primary transition-colors font-semibold text-content-primary"
+              >
+                Tenant
+              </button>
+            </div>
+            <p className="text-[11px] text-content-muted">
+              Click any role above to fill credentials, then press <b>Sign In</b>.
+            </p>
           </div>
         </div>
       </div>
