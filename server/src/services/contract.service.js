@@ -6,6 +6,8 @@ import { tenantRepository } from '../repositories/tenant.repository.js';
 import { userRepository } from '../repositories/user.repository.js';
 import { invoiceRepository } from '../repositories/invoice.repository.js';
 import { auditRepository } from '../repositories/audit.repository.js';
+import { applicationRepository } from '../repositories/application.repository.js';
+import { telegramService } from './telegram.service.js';
 import {
   BadRequestError,
   NotFoundError,
@@ -129,6 +131,16 @@ export class ContractService {
         };
       }
 
+      // Approve any pending applications for this tenant/room
+      applicationRepository.approveByTenantAndRoom(tenantId, roomId);
+
+      // Link any previously uploaded tenant documents (e.g. ID card photo) to this contract
+      db.prepare(`
+        UPDATE documents
+        SET contract_id = ?
+        WHERE tenant_id = ? AND contract_id IS NULL
+      `).run(createdId, tenantId);
+
       auditRepository.create({
         userId,
         action: 'CREATE_CONTRACT',
@@ -147,8 +159,34 @@ export class ContractService {
     });
 
     execute();
+
+    const tempPassword = tenantAccount.defaultPassword || `Rent#${room.roomNumber}`;
+
+    // Automatic Telegram delivery of login credentials to tenant
+    telegramService.sendTenantCredentials({
+      tenant,
+      room,
+      username: tenantAccount.username,
+      tempPassword,
+    }).catch((err) => console.warn('[Telegram Dispatch Error]', err.message));
+
+    const shareInfo = telegramService.formatTenantShareMessage({
+      tenant,
+      room,
+      username: tenantAccount.username,
+      tempPassword,
+    });
+
     const createdContract = contractRepository.findById(createdId);
-    return { ...createdContract, tenantAccount };
+    return {
+      ...createdContract,
+      tenantAccount: {
+        ...tenantAccount,
+        defaultPassword: tempPassword,
+        shareText: shareInfo.plainText,
+        directTelegramUrl: shareInfo.directTelegramUrl,
+      },
+    };
   }
 
   /**

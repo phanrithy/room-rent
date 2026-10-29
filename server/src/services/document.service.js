@@ -67,9 +67,16 @@ export class DocumentService {
       throw new NotFoundError('Document not found', 'DOCUMENT_NOT_FOUND');
     }
 
-    const contract = contractRepository.findById(doc.contractId);
-    if (contract && currentUser.role === 'tenant' && contract.tenantId !== currentUser.tenantId) {
-      throw new ForbiddenError('You can only view your own documents');
+    if (currentUser.role === 'tenant') {
+      if (doc.tenantId && doc.tenantId !== currentUser.tenantId) {
+        throw new ForbiddenError('You can only view your own documents');
+      }
+      if (doc.contractId) {
+        const contract = contractRepository.findById(doc.contractId);
+        if (contract && contract.tenantId !== currentUser.tenantId) {
+          throw new ForbiddenError('You can only view your own documents');
+        }
+      }
     }
 
     const filePath = path.join(uploadDir, doc.fileName);

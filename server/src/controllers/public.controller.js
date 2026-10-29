@@ -4,6 +4,8 @@ import { tenantRepository } from '../repositories/tenant.repository.js';
 import { userRepository } from '../repositories/user.repository.js';
 import { documentRepository } from '../repositories/document.repository.js';
 import { auditRepository } from '../repositories/audit.repository.js';
+import { applicationRepository } from '../repositories/application.repository.js';
+import { telegramService } from '../services/telegram.service.js';
 import { NotFoundError, BadRequestError } from '../utils/errors.js';
 
 export class PublicController {
@@ -126,14 +128,23 @@ export class PublicController {
       if (req.file) {
         const docId = documentRepository.create({
           contractId: null,
+          tenantId: tenant.id,
           kind: 'id_copy',
           fileName: req.file.filename,
           originalName: req.file.originalname,
         });
-        savedDoc = { id: docId, fileName: req.file.filename };
+        savedDoc = { id: docId, fileName: req.file.filename, originalName: req.file.originalname };
       }
 
-      // 3. Automatically create / link tenant user account for mobile login
+      // 3. Create or record room application
+      const applicationId = applicationRepository.create({
+        roomId: room.id,
+        tenantId: tenant.id,
+        moveInDate: moveInDate ? moveInDate.trim() : null,
+        note: `Self-application via Room #${room.roomNumber} QR poster`,
+      });
+
+      // 4. Automatically create / link tenant user account for mobile login
       const existingUser = userRepository.findByTenantId(tenant.id);
       let username = cleanPhone;
       let tempPassword = `Rent#${room.roomNumber}`;
@@ -155,13 +166,22 @@ export class PublicController {
         username = existingUser.username;
       }
 
-      // 4. Audit log
+      // 5. Send Telegram notification to Landlord / Admin
+      telegramService.sendAdminApplicationAlert({
+        room,
+        tenant,
+        moveInDate,
+        documentOriginalName: req.file ? req.file.originalname : null,
+      }).catch((err) => console.warn('[Telegram Alert Failed]', err.message));
+
+      // 6. Audit log
       auditRepository.create({
         userId: null,
         action: 'PUBLIC_TENANT_APPLY',
-        tableName: 'tenants',
-        recordId: tenant.id,
+        tableName: 'room_applications',
+        recordId: applicationId,
         detail: {
+          applicationId,
           name: tenant.name,
           phone: tenant.phone,
           roomId: room.id,
@@ -174,6 +194,13 @@ export class PublicController {
       res.status(201).json({
         success: true,
         message: 'Rental application submitted successfully!',
+        application: {
+          id: applicationId,
+          roomId: room.id,
+          roomNumber: room.roomNumber,
+          status: 'pending',
+          moveInDate: moveInDate || null,
+        },
         tenant: {
           id: tenant.id,
           name: tenant.name,

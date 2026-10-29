@@ -251,10 +251,20 @@ export function PublicApplyPage() {
                 </div>
               </div>
 
-              <div className="pt-2 text-[11px] text-content-muted">
-                {i18n.language === 'km'
-                  ? 'អ្នកអាចប្រើគណនីនេះដើម្បីមើលវិក្កយបត្រ បង់ប្រាក់តាម Bakong KHQR និងស្នើសុំជួសជុលបានគ្រប់ពេល។'
-                  : 'You can use this account to view your lease, pay rent with Bakong KHQR, and submit maintenance tickets.'}
+              <div className="pt-2 text-[11px] text-content-muted space-y-1">
+                <div className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>
+                    {i18n.language === 'km'
+                      ? 'ព័ត៌មានរបស់អ្នកត្រូវបានផ្ញើជូនម្ចាស់ផ្ទះតាម Telegram រួចរាល់!'
+                      : 'Application dispatched to landlord via Telegram!'}
+                  </span>
+                </div>
+                <p>
+                  {i18n.language === 'km'
+                    ? 'អ្នកអាចប្រើគណនីនេះដើម្បីចូលមើលព័ត៌មានបន្ទប់ ពិនិត្យស្ថានភាពកិច្ចសន្យា និងបង់ប្រាក់តាម Bakong KHQR។'
+                    : 'Log in now to review your applied room details, track lease contract approval, and pay bills via Bakong KHQR.'}
+                </p>
               </div>
             </div>
 

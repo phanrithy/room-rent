@@ -19,10 +19,12 @@ import maintenanceRoutes from './maintenance.routes.js';
 import khqrRoutes from './khqr.routes.js';
 import meRoutes from './me.routes.js';
 import publicRoutes from './public.routes.js';
+import applicationRoutes from './application.routes.js';
 
 const router = Router();
 
 router.use('/public', publicRoutes);
+router.use('/applications', applicationRoutes);
 router.use('/auth', authRoutes);
 router.use('/health', healthRoutes);
 router.use('/rooms', roomRoutes);

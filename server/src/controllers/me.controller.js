@@ -4,7 +4,9 @@ import { paymentRepository } from '../repositories/payment.repository.js';
 import { maintenanceRepository } from '../repositories/maintenance.repository.js';
 import { maintenanceService } from '../services/maintenance.service.js';
 import { tenantRepository } from '../repositories/tenant.repository.js';
-import { NotFoundError, ForbiddenError } from '../utils/errors.js';
+import { applicationRepository } from '../repositories/application.repository.js';
+import { documentRepository } from '../repositories/document.repository.js';
+import { NotFoundError, ForbiddenError, BadRequestError } from '../utils/errors.js';
 
 export function getTenantDashboard(req, res, next) {
   try {
@@ -15,6 +17,8 @@ export function getTenantDashboard(req, res, next) {
 
     const tenant = tenantRepository.findById(tenantId);
     const contract = contractRepository.findActiveByTenant(tenantId);
+    const pendingApplication = !contract ? applicationRepository.findByTenantId(tenantId) : null;
+    const documents = documentRepository.findByTenant(tenantId);
 
     const invoices = invoiceRepository.findAndCountAll({
       tenantId,
@@ -36,10 +40,33 @@ export function getTenantDashboard(req, res, next) {
     res.json({
       tenant,
       activeContract: contract,
+      pendingApplication,
+      documents,
       currentUnpaidInvoice: currentUnpaid,
       recentInvoices: invoices.items,
       recentMaintenance: maintenance.items,
     });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export function updateTenantProfile(req, res, next) {
+  try {
+    const tenantId = req.user.tenantId;
+    if (!tenantId) throw new ForbiddenError('Not a tenant');
+
+    const { name, phone, idNumber, email, telegramChatId } = req.body;
+    const updates = {};
+    if (name !== undefined) updates.name = name.trim();
+    if (phone !== undefined) updates.phone = phone.trim();
+    if (idNumber !== undefined) updates.idNumber = idNumber ? idNumber.trim() : null;
+    if (email !== undefined) updates.email = email ? email.trim() : null;
+    if (telegramChatId !== undefined) updates.telegramChatId = telegramChatId ? telegramChatId.trim() : null;
+
+    tenantRepository.update(tenantId, updates);
+    const updated = tenantRepository.findById(tenantId);
+    res.json({ tenant: updated, message: 'Profile updated successfully' });
   } catch (err) {
     next(err);
   }

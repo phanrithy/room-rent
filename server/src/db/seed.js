@@ -19,6 +19,7 @@ export async function seedDatabase(options = { demo: true, clean: false }) {
       db.prepare('DELETE FROM invoices').run();
       db.prepare('DELETE FROM meter_readings').run();
       db.prepare('DELETE FROM contracts').run();
+      db.prepare('DELETE FROM room_applications').run();
       db.prepare('DELETE FROM tenants').run();
       db.prepare('DELETE FROM rooms').run();
       db.prepare('DELETE FROM properties').run();

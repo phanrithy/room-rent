@@ -13,6 +13,10 @@ import {
   Phone,
   Building2,
   QrCode,
+  Edit3,
+  Clock,
+  FileText,
+  User,
 } from 'lucide-react';
 
 import { PageHeader } from '../components/common/PageHeader.jsx';
@@ -40,6 +44,54 @@ export function TenantPortalPage() {
   const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
   const [issueDescription, setIssueDescription] = useState('');
   const [submittingIssue, setSubmittingIssue] = useState(false);
+
+  // Edit Tenant Profile (before or after contract)
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [profileName, setProfileName] = useState('');
+  const [profilePhone, setProfilePhone] = useState('');
+  const [profileIdNumber, setProfileIdNumber] = useState('');
+  const [profileEmail, setProfileEmail] = useState('');
+  const [profileTelegram, setProfileTelegram] = useState('');
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  const openEditProfile = () => {
+    if (dashboard?.tenant) {
+      setProfileName(dashboard.tenant.name || '');
+      setProfilePhone(dashboard.tenant.phone || '');
+      setProfileIdNumber(dashboard.tenant.idNumber || '');
+      setProfileEmail(dashboard.tenant.email || '');
+      setProfileTelegram(dashboard.tenant.telegramChatId || '');
+    }
+    setIsEditProfileOpen(true);
+  };
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    if (!profileName.trim() || !profilePhone.trim()) {
+      showError('Name and phone number are required');
+      return;
+    }
+    setSavingProfile(true);
+    try {
+      await apiRequest('me/profile', {
+        method: 'PATCH',
+        body: JSON.stringify({
+          name: profileName.trim(),
+          phone: profilePhone.trim(),
+          idNumber: profileIdNumber.trim() || null,
+          email: profileEmail.trim() || null,
+          telegramChatId: profileTelegram.trim() || null,
+        }),
+      });
+      showSuccess(i18n.language === 'km' ? 'ព័ត៌មានត្រូវបានកែប្រែជោគជ័យ' : 'Information updated successfully');
+      setIsEditProfileOpen(false);
+      fetchTenantDashboard();
+    } catch (err) {
+      showError(err.message || 'Failed to update profile');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
 
   const fetchTenantDashboard = useCallback(async () => {
     setLoading(true);
@@ -149,6 +201,11 @@ export function TenantPortalPage() {
             <Card
               title={`Room #${activeContract.roomNumber} (Floor ${activeContract.floor})`}
               subtitle="Active Residential Lease"
+              action={
+                <Button variant="outline" size="sm" icon={Edit3} onClick={openEditProfile}>
+                  {i18n.language === 'km' ? 'កែប្រែព័ត៌មាន' : 'Edit Profile'}
+                </Button>
+              }
             >
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs pt-2">
                 <div className="p-3 bg-surface-subtle border border-border rounded-xl">
@@ -168,6 +225,84 @@ export function TenantPortalPage() {
                   <span className="font-semibold text-content-primary">
                     {activeContract.startDate} → {activeContract.endDate}
                   </span>
+                </div>
+              </div>
+            </Card>
+          ) : dashboard?.pendingApplication ? (
+            <Card
+              title={
+                <div className="flex flex-wrap items-center gap-2">
+                  <span>
+                    {i18n.language === 'km'
+                      ? `បន្ទប់លេខ #${dashboard.pendingApplication.roomNumber} (ជាន់ទី ${dashboard.pendingApplication.floor})`
+                      : `Room #${dashboard.pendingApplication.roomNumber} (Floor ${dashboard.pendingApplication.floor})`}
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                    {i18n.language === 'km' ? 'កំពុងរង់ចាំការយល់ព្រមពីម្ចាស់ផ្ទះ' : 'Application Pending Landlord Contract'}
+                  </span>
+                </div>
+              }
+              subtitle={i18n.language === 'km' ? 'ពាក្យស្នើសុំជួលតាម QR ដែលអ្នកបានស្កេន' : 'Room Application from Door QR Code'}
+              action={
+                <Button variant="outline" size="sm" icon={Edit3} onClick={openEditProfile}>
+                  {i18n.language === 'km' ? 'កែប្រែព័ត៌មានខ្ញុំ' : 'Update Info'}
+                </Button>
+              }
+            >
+              <div className="space-y-4 pt-1">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+                  <div className="p-3 bg-surface-subtle border border-border rounded-xl">
+                    <span className="text-content-muted block">Monthly Rent</span>
+                    <span className="font-mono font-bold text-base text-primary">
+                      {formatMoney(dashboard.pendingApplication.monthlyRent)}
+                    </span>
+                    <span className="text-[11px] text-content-muted block">
+                      {formatMoney(dashboard.pendingApplication.monthlyRent, { showRiel: true })}
+                    </span>
+                  </div>
+                  <div className="p-3 bg-surface-subtle border border-border rounded-xl">
+                    <span className="text-content-muted block">Status</span>
+                    <span className="font-bold text-amber-500">
+                      Pending Approval
+                    </span>
+                  </div>
+                  <div className="p-3 bg-surface-subtle border border-border rounded-xl col-span-2 sm:col-span-1">
+                    <span className="text-content-muted block">Target Move-in</span>
+                    <span className="font-semibold text-content-primary">
+                      {dashboard.pendingApplication.moveInDate || 'Immediate'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Submitted Tenant Details Review */}
+                <div className="p-3.5 bg-surface-subtle/70 border border-border rounded-xl space-y-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-content-primary block">Your Submitted Application Details:</span>
+                    <Button variant="ghost" size="sm" icon={Edit3} onClick={openEditProfile} className="text-primary text-[11px] p-0 h-auto">
+                      Edit
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-content-secondary">
+                    <div>Applicant Name: <span className="font-semibold text-content-primary">{tenant?.name}</span></div>
+                    <div>Phone: <span className="font-mono font-semibold text-content-primary">{tenant?.phone}</span></div>
+                    <div>National ID / Passport: <span className="font-mono font-semibold text-content-primary">{tenant?.idNumber || 'Not provided'}</span></div>
+                    <div>Telegram: <span className="font-semibold text-primary">{tenant?.telegramChatId || 'Not provided'}</span></div>
+                  </div>
+                  {dashboard.documents?.length > 0 && (
+                    <div className="pt-1 text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-medium">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>National ID / Passport copy uploaded & attached</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-3 bg-primary/10 border border-primary/20 rounded-xl text-xs text-content-secondary flex items-start gap-2.5">
+                  <Clock className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                  <p>
+                    {i18n.language === 'km'
+                      ? 'ពាក្យស្នើសុំរបស់អ្នកត្រូវបានបញ្ជូនទៅម្ចាស់ផ្ទះតាម Telegram រួចរាល់។ នៅពេលម្ចាស់ផ្ទះយល់ព្រមបង្កើតកិច្ចសន្យា វិក្កយបត្រប្រចាំខែ និងកូដបង់ប្រាក់បាគង KHQR នឹងបង្ហាញនៅត្រង់នេះ។'
+                      : 'Your application has been received and sent to management via Telegram. Once the landlord approves and confirms your contract, your active lease and monthly Bakong KHQR bill will be ready here.'}
+                  </p>
                 </div>
               </div>
             </Card>
@@ -378,6 +513,59 @@ export function TenantPortalPage() {
             onChange={(e) => setIssueDescription(e.target.value)}
             placeholder="e.g. Bathroom light bulb not working, aircon leaking"
             required
+          />
+        </form>
+      </Modal>
+      {/* Edit Tenant Profile Modal */}
+      <Modal
+        isOpen={isEditProfileOpen}
+        onClose={() => setIsEditProfileOpen(false)}
+        title={i18n.language === 'km' ? 'កែប្រែព័ត៌មានអ្នកជួល' : 'Update My Information'}
+        maxWidth="max-w-md"
+        footer={
+          <div className="flex justify-end gap-2 w-full">
+            <Button variant="secondary" onClick={() => setIsEditProfileOpen(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleSaveProfile}
+              loading={savingProfile}
+            >
+              {t('common.save')}
+            </Button>
+          </div>
+        }
+      >
+        <form onSubmit={handleSaveProfile} className="space-y-4">
+          <Input
+            label="Full Name / ឈ្មោះពេញ"
+            value={profileName}
+            onChange={(e) => setProfileName(e.target.value)}
+            required
+          />
+          <Input
+            label="Phone Number / លេខទូរស័ព្ទ (Used for Login)"
+            value={profilePhone}
+            onChange={(e) => setProfilePhone(e.target.value)}
+            required
+          />
+          <Input
+            label="National ID or Passport / អត្តសញ្ញាណប័ណ្ណ ឬ លិខិតឆ្លងដែន"
+            value={profileIdNumber}
+            onChange={(e) => setProfileIdNumber(e.target.value)}
+          />
+          <Input
+            label="Telegram Username or Chat ID"
+            value={profileTelegram}
+            onChange={(e) => setProfileTelegram(e.target.value)}
+            placeholder="@yourusername"
+          />
+          <Input
+            label="Email Address (Optional)"
+            type="email"
+            value={profileEmail}
+            onChange={(e) => setProfileEmail(e.target.value)}
           />
         </form>
       </Modal>

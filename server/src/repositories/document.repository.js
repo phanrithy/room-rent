@@ -18,13 +18,20 @@ export class DocumentRepository {
     return rows.map(keysToCamel);
   }
 
-  create({ contractId, kind, fileName, originalName }) {
+  findByTenant(tenantId) {
+    const rows = this.db
+      .prepare('SELECT * FROM documents WHERE tenant_id = ? ORDER BY id DESC')
+      .all(tenantId);
+    return rows.map(keysToCamel);
+  }
+
+  create({ contractId = null, tenantId = null, kind, fileName, originalName }) {
     const info = this.db
       .prepare(`
-        INSERT INTO documents (contract_id, kind, file_name, original_name)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO documents (contract_id, tenant_id, kind, file_name, original_name)
+        VALUES (?, ?, ?, ?, ?)
       `)
-      .run(contractId, kind, fileName, originalName);
+      .run(contractId, tenantId, kind, fileName, originalName);
     return info.lastInsertRowid;
   }
 

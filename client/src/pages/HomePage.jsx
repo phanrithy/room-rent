@@ -94,6 +94,7 @@ export function HomePage() {
   const roomGrid = dashboard?.roomGrid || [];
 
   const urgentTasksCount =
+    (tasks.pendingApplications?.length || 0) +
     (tasks.readingsMissing?.length || 0) +
     (tasks.invoicesToGenerate?.length || 0) +
     (tasks.overdueInvoices?.length || 0) +
@@ -133,6 +134,36 @@ export function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          {/* Pending Tenant Applications */}
+          {tasks.pendingApplications?.length > 0 && (
+            <div
+              onClick={() => navigate('/contracts')}
+              className="p-4 rounded-xl border border-amber-500/40 bg-amber-500/10 cursor-pointer hover:bg-amber-500/20 transition-all shadow-xs flex flex-col justify-between"
+            >
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 block">
+                    {i18n.language === 'km' ? 'ពាក្យស្នើសុំជួលបន្ទប់ថ្មី' : 'New Room Applications'}
+                  </span>
+                  <p className="text-base font-bold text-content-primary mt-1">
+                    {tasks.pendingApplications.length} {i18n.language === 'km' ? 'រង់ចាំការយល់ព្រម' : 'pending applications'}
+                  </p>
+                  <p className="text-xs text-content-muted mt-0.5">
+                    {tasks.pendingApplications[0].tenantName} applied for Room #{tasks.pendingApplications[0].roomNumber}
+                  </p>
+                </div>
+                <div className="p-2 rounded-lg bg-amber-500 text-white">
+                  <Users className="w-5 h-5" />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400 mt-3 pt-2 border-t border-amber-500/20">
+                <span>{i18n.language === 'km' ? 'ពិនិត្យ & បង្កើតកិច្ចសន្យា' : 'Review & Agree to Contract'}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </div>
+            </div>
+          )}
+
           {/* Missing Readings */}
           {tasks.readingsMissing?.length > 0 && (
             <div

@@ -12,7 +12,16 @@ const maintenanceSchema = z.object({
   description: z.string().min(1, 'Description is required'),
 });
 
+const profileSchema = z.object({
+  name: z.string().optional(),
+  phone: z.string().optional(),
+  idNumber: z.string().optional().nullable(),
+  email: z.string().optional().nullable(),
+  telegramChatId: z.string().optional().nullable(),
+});
+
 router.get('/dashboard', meController.getTenantDashboard);
+router.patch('/profile', validate(profileSchema), meController.updateTenantProfile);
 router.get('/contract', meController.getTenantContract);
 router.get('/invoices', meController.getTenantInvoices);
 router.get('/payments', meController.getTenantPayments);

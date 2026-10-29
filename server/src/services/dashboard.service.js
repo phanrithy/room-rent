@@ -54,6 +54,12 @@ export class DashboardService {
     `).get();
     const totalUnpaidBalance = unpaidRow ? unpaidRow.total : 0;
 
+    // Pending Room Applications
+    const pendingAppsRow = this.db.prepare(`
+      SELECT COUNT(*) as count FROM room_applications WHERE status = 'pending'
+    `).get();
+    const pendingApplicationsCount = pendingAppsRow ? pendingAppsRow.count : 0;
+
     // 3. Today Tasks (Urgent landlord action items)
     // A. Active contracts missing meter readings this month
     const readingsMissing = this.db.prepare(`
@@ -118,6 +124,19 @@ export class DashboardService {
       ORDER BY m.created_at DESC
     `).all().map(keysToCamel);
 
+    // F. Pending room applications
+    const pendingApplications = this.db.prepare(`
+      SELECT a.id, a.room_id, a.tenant_id, a.move_in_date, a.created_at,
+             r.room_number, r.floor, r.monthly_rent,
+             t.name as tenant_name, t.phone as tenant_phone, t.id_number as tenant_id_number,
+             t.telegram_chat_id
+      FROM room_applications a
+      JOIN rooms r ON a.room_id = r.id
+      JOIN tenants t ON a.tenant_id = t.id
+      WHERE a.status = 'pending'
+      ORDER BY a.id DESC
+    `).all().map(keysToCamel);
+
     // 4. 12-Month Financial Chart Data
     // Generates past 12 months array
     const chartData = [];
@@ -167,8 +186,10 @@ export class DashboardService {
         expensesThisMonth,
         profitThisMonth,
         totalUnpaidBalance,
+        pendingApplications: pendingApplicationsCount,
       },
       todayTasks: {
+        pendingApplications,
         readingsMissing,
         invoicesToGenerate,
         overdueInvoices,

@@ -18,6 +18,9 @@ import {
   FileText,
   Copy,
   Check,
+  Send,
+  ExternalLink,
+  Clock,
 } from 'lucide-react';
 
 import { PageHeader } from '../components/common/PageHeader.jsx';
@@ -92,6 +95,18 @@ export function ContractsPage() {
   const [settlementData, setSettlementData] = useState(null);
   const [endingSubmitting, setEndingSubmitting] = useState(false);
 
+  // Pending QR Applications
+  const [pendingApplications, setPendingApplications] = useState([]);
+
+  const fetchPendingApplications = useCallback(async () => {
+    try {
+      const data = await apiRequest('applications/pending');
+      setPendingApplications(data.items || []);
+    } catch {
+      // quiet fallback
+    }
+  }, []);
+
   const fetchContracts = useCallback(async () => {
     setLoading(true);
     try {
@@ -104,12 +119,13 @@ export function ContractsPage() {
       const data = await apiRequest(`contracts?${queryParams.toString()}`);
       setContracts(data.items);
       setTotal(data.total);
+      fetchPendingApplications();
     } catch (err) {
       showError(err.message || 'Failed to load contracts');
     } finally {
       setLoading(false);
     }
-  }, [page, statusFilter, showError]);
+  }, [page, statusFilter, showError, fetchPendingApplications]);
 
   useEffect(() => {
     fetchContracts();
@@ -124,8 +140,48 @@ export function ContractsPage() {
       ]);
       setAvailableRooms(roomsRes.items);
       setTenantsList(tenantsRes.items);
+      return { rooms: roomsRes.items, tenants: tenantsRes.items };
     } catch (err) {
       showError('Failed to load rooms or tenants for wizard');
+      return { rooms: [], tenants: [] };
+    }
+  };
+
+  const openWizardWithApplicant = async (app) => {
+    const { rooms } = await loadWizardDependencies();
+    setSelectedRoomId(String(app.roomId));
+    setSelectedTenantId(String(app.tenantId));
+    
+    // Find room to match rent
+    const matchedRoom = rooms.find((r) => String(r.id) === String(app.roomId));
+    const targetRent = app.monthlyRent || (matchedRoom ? matchedRoom.monthlyRent : 15000);
+    setRentCents(targetRent);
+    setDepositCents(targetRent);
+
+    if (app.moveInDate) {
+      setStartDate(app.moveInDate);
+      const nextYear = new Date(app.moveInDate);
+      nextYear.setFullYear(nextYear.getFullYear() + 1);
+      setEndDate(nextYear.toISOString().split('T')[0]);
+    } else {
+      setStartDate(new Date().toISOString().split('T')[0]);
+      const nextYear = new Date();
+      nextYear.setFullYear(nextYear.getFullYear() + 1);
+      setEndDate(nextYear.toISOString().split('T')[0]);
+    }
+
+    setStep(3); // Jump directly to Terms & Deposit
+    setWizardError('');
+    setIsWizardOpen(true);
+  };
+
+  const handleRejectApplication = async (appId) => {
+    try {
+      await apiRequest(`applications/${appId}/reject`, { method: 'POST' });
+      showSuccess(i18n.language === 'km' ? 'ពាក្យស្នើសុំត្រូវបានបដិសេធ' : 'Application declined');
+      fetchPendingApplications();
+    } catch (err) {
+      showError(err.message || 'Failed to decline application');
     }
   };
 
@@ -133,9 +189,15 @@ export function ContractsPage() {
   useEffect(() => {
     if (searchParams.get('action') === 'new') {
       const directRoomId = searchParams.get('roomId');
-      openWizard(directRoomId);
+      const directTenantId = searchParams.get('tenantId');
+      if (directRoomId && directTenantId) {
+        openWizardWithApplicant({ roomId: directRoomId, tenantId: directTenantId });
+      } else {
+        openWizard(directRoomId);
+      }
       searchParams.delete('action');
       searchParams.delete('roomId');
+      searchParams.delete('tenantId');
       setSearchParams(searchParams, { replace: true });
     }
   }, [searchParams]);
@@ -374,6 +436,104 @@ export function ContractsPage() {
           )
         }
       />
+
+      {/* Pending Room Applications from Door QR */}
+      {pendingApplications.length > 0 && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-bold text-sm">
+              <Phone className="w-4 h-4" />
+              <span>
+                {i18n.language === 'km'
+                  ? `ពាក្យស្នើសុំជួលតាម QR ដែលរង់ចាំការយល់ព្រម (${pendingApplications.length})`
+                  : `Pending Room Applications (${pendingApplications.length})`}
+              </span>
+            </div>
+            <span className="text-[11px] text-content-muted">
+              {i18n.language === 'km' ? 'ស្កេនពីទ្វារបន្ទប់' : 'Scanned from Door QR'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {pendingApplications.map((app) => (
+              <div
+                key={app.id}
+                className="p-3.5 bg-surface border border-border rounded-xl space-y-2.5 shadow-xs"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className="font-bold text-sm text-content-primary block">
+                      Room #{app.roomNumber} (Floor {app.floor})
+                    </span>
+                    <span className="text-xs text-content-secondary font-medium">
+                      {app.tenantName} • {app.tenantPhone}
+                    </span>
+                  </div>
+                  <span className="font-mono font-bold text-xs text-primary">
+                    {formatMoney(app.monthlyRent)}/mo
+                  </span>
+                </div>
+
+                <div className="text-[11px] text-content-muted space-y-1">
+                  <div>
+                    National ID / Passport:{' '}
+                    <span className="font-mono font-medium text-content-secondary">
+                      {app.tenantIdNumber || 'N/A'}
+                    </span>
+                  </div>
+                  {app.telegramChatId && (
+                    <div>
+                      Telegram:{' '}
+                      <span className="font-medium text-primary">
+                        @{app.telegramChatId.replace('@', '')}
+                      </span>
+                    </div>
+                  )}
+                  {app.moveInDate && (
+                    <div>
+                      Target Move-in:{' '}
+                      <span className="font-medium text-content-secondary">{app.moveInDate}</span>
+                    </div>
+                  )}
+                  {app.idDocumentId && (
+                    <div className="pt-1">
+                      <a
+                        href={`/api/documents/${app.idDocumentId}/file`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline font-semibold inline-flex items-center gap-1"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>View ID Card / Passport Photo</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 pt-2 border-t border-border">
+                  <Button
+                    size="sm"
+                    variant="primary"
+                    className="flex-1 text-xs"
+                    onClick={() => openWizardWithApplicant(app)}
+                  >
+                    {i18n.language === 'km' ? 'យល់ព្រម & បង្កើតកិច្ចសន្យា' : 'Agree & Create Contract'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-xs text-danger hover:bg-danger-bg"
+                    onClick={() => handleRejectApplication(app.id)}
+                  >
+                    Decline
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="bg-surface border border-border rounded-xl p-3 shadow-xs flex items-center justify-between">
@@ -862,20 +1022,31 @@ export function ContractsPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border">
+            <div className="flex flex-wrap items-center justify-end gap-2.5 pt-3 border-t border-border">
+              {createdTenantAccount.directTelegramUrl && (
+                <a
+                  href={createdTenantAccount.directTelegramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-[#229ED9] text-white hover:bg-[#1E88E5] transition-all shadow-xs"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Send via Telegram</span>
+                </a>
+              )}
               <Button
                 type="button"
                 variant="outline"
                 icon={copiedTenantCreds ? Check : Copy}
                 onClick={() => {
-                  const msg = `Sunrise Apartments - Room ${createdTenantAccount.roomNumber}\nTenant Portal Login:\nUsername: ${createdTenantAccount.username}\nPassword: ${createdTenantAccount.defaultPassword || '(your password)'}\nLogin Link: ${window.location.origin}/login`;
+                  const msg = createdTenantAccount.shareText || `Sunrise Apartments - Room ${createdTenantAccount.roomNumber}\nTenant Portal Login:\nUsername: ${createdTenantAccount.username}\nPassword: ${createdTenantAccount.defaultPassword || '(your password)'}\nLogin Link: ${window.location.origin}/login`;
                   navigator.clipboard.writeText(msg);
                   setCopiedTenantCreds(true);
                   showSuccess('Credentials copied! You can paste and send via Telegram or SMS.');
                   setTimeout(() => setCopiedTenantCreds(false), 2500);
                 }}
               >
-                {copiedTenantCreds ? 'Copied' : 'Copy for Tenant (Telegram/SMS)'}
+                {copiedTenantCreds ? 'Copied' : 'Copy for Telegram/SMS'}
               </Button>
               <Button
                 type="button"
