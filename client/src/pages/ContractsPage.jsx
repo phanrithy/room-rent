@@ -15,6 +15,7 @@ import {
   Archive,
   Phone,
   ShieldCheck,
+  FileText,
 } from 'lucide-react';
 
 import { PageHeader } from '../components/common/PageHeader.jsx';
@@ -30,6 +31,7 @@ import { StatCard } from '../components/common/StatCard.jsx';
 import { DataTable } from '../components/common/DataTable.jsx';
 import { Modal } from '../components/common/Modal.jsx';
 import { Tabs } from '../components/common/Tabs.jsx';
+import { DocumentsModal } from '../components/modals/DocumentsModal.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { apiRequest } from '../utils/api.js';
@@ -69,6 +71,7 @@ export function ContractsPage() {
 
   // End Contract / Move-out Modal State
   const [endingContract, setEndingContract] = useState(null);
+  const [contractForDocs, setContractForDocs] = useState(null);
   const [damageChargesCents, setDamageChargesCents] = useState(0);
   const [damageNote, setDamageNote] = useState('');
   const [settlementData, setSettlementData] = useState(null);
@@ -274,6 +277,14 @@ export function ContractsPage() {
       label: t('common.actions'),
       render: (c) => (
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            icon={FileText}
+            onClick={() => setContractForDocs(c)}
+          >
+            Files
+          </Button>
           {c.status === 'active' && isAdmin && (
             <Button
               variant="outline"
@@ -652,6 +663,13 @@ export function ContractsPage() {
           </div>
         )}
       </Modal>
+
+      {/* Contract Documents Modal */}
+      <DocumentsModal
+        isOpen={!!contractForDocs}
+        onClose={() => setContractForDocs(null)}
+        contract={contractForDocs}
+      />
     </div>
   );
 }

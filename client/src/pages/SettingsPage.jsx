@@ -15,6 +15,12 @@ import {
   ShieldCheck,
   CheckCircle2,
   Database,
+  Plus,
+  Trash2,
+  UserPlus,
+  Download,
+  Upload,
+  Lock,
 } from 'lucide-react';
 
 import { PageHeader } from '../components/common/PageHeader.jsx';
@@ -23,6 +29,8 @@ import { Input } from '../components/common/Input.jsx';
 import { Select } from '../components/common/Select.jsx';
 import { MoneyInput } from '../components/common/MoneyInput.jsx';
 import { Card } from '../components/common/Card.jsx';
+import { Modal } from '../components/common/Modal.jsx';
+import { ConfirmDialog } from '../components/common/ConfirmDialog.jsx';
 import { Skeleton } from '../components/common/Skeleton.jsx';
 import { OnboardingWizardModal } from '../components/onboarding/OnboardingWizardModal.jsx';
 import { useToast } from '../context/ToastContext.jsx';
@@ -67,6 +75,38 @@ export function SettingsPage() {
   const [preferredLang, setPreferredLang] = useState(i18n.language || 'en');
   const [preferredTheme, setPreferredTheme] = useState(theme || 'system');
 
+  // 7. Multi-Properties
+  const [properties, setProperties] = useState([]);
+  const [isPropModalOpen, setIsPropModalOpen] = useState(false);
+  const [newPropName, setNewPropName] = useState('');
+  const [newPropAddress, setNewPropAddress] = useState('');
+  const [propSubmitting, setPropSubmitting] = useState(false);
+
+  // 8. Staff / Users
+  const [usersList, setUsersList] = useState([]);
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+  const [newUsername, setNewUsername] = useState('');
+  const [newUserPassword, setNewUserPassword] = useState('');
+  const [newUserRole, setNewUserRole] = useState('staff');
+  const [userSubmitting, setUserSubmitting] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+
+  // 9. Backup / Restore
+  const [restoring, setRestoring] = useState(false);
+
+  const fetchPropertiesAndUsers = useCallback(async () => {
+    try {
+      const [propData, userData] = await Promise.all([
+        apiRequest('properties'),
+        apiRequest('users?pageSize=100'),
+      ]);
+      setProperties(propData.items || []);
+      setUsersList(userData.items || []);
+    } catch {
+      // Ignore
+    }
+  }, []);
+
   const fetchSettings = useCallback(async () => {
     setLoading(true);
     try {
@@ -85,12 +125,136 @@ export function SettingsPage() {
       setMerchantCity(s.merchant_city || 'Phnom Penh');
       setReminderDaysBefore(s.reminder_days_before || '3');
       setExchangeRate(s.exchange_rate || '4100');
+
+      fetchPropertiesAndUsers();
     } catch (err) {
       showError(err.message || 'Failed to load settings');
     } finally {
       setLoading(false);
     }
-  }, [showError]);
+  }, [fetchPropertiesAndUsers, showError]);
+
+  const handleCreateProperty = async (e) => {
+    e.preventDefault();
+    if (!newPropName.trim()) return;
+    setPropSubmitting(true);
+    try {
+      await apiRequest('properties', {
+        method: 'POST',
+        body: JSON.stringify({ name: newPropName.trim(), address: newPropAddress.trim() }),
+      });
+      showSuccess('Property added successfully');
+      setIsPropModalOpen(false);
+      setNewPropName('');
+      setNewPropAddress('');
+      fetchPropertiesAndUsers();
+    } catch (err) {
+      showError(err.message || 'Failed to add property');
+    } finally {
+      setPropSubmitting(false);
+    }
+  };
+
+  const handleCreateUser = async (e) => {
+    e.preventDefault();
+    if (!newUsername.trim() || !newUserPassword.trim()) return;
+    setUserSubmitting(true);
+    try {
+      await apiRequest('users', {
+        method: 'POST',
+        body: JSON.stringify({
+          username: newUsername.trim(),
+          password: newUserPassword,
+          role: newUserRole,
+        }),
+      });
+      showSuccess(`Staff user ${newUsername} created`);
+      setIsUserModalOpen(false);
+      setNewUsername('');
+      setNewUserPassword('');
+      fetchPropertiesAndUsers();
+    } catch (err) {
+      showError(err.message || 'Failed to create user');
+    } finally {
+      setUserSubmitting(false);
+    }
+  };
+
+  const handleToggleUserActive = async (targetUser) => {
+    try {
+      await apiRequest(`users/${targetUser.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ active: !targetUser.active }),
+      });
+      showSuccess(`User ${targetUser.username} status updated`);
+      fetchPropertiesAndUsers();
+    } catch (err) {
+      showError(err.message || 'Failed to update user status');
+    }
+  };
+
+  const handleDeleteUserConfirm = async () => {
+    if (!userToDelete) return;
+    try {
+      await apiRequest(`users/${userToDelete.id}`, { method: 'DELETE' });
+      showSuccess(`User ${userToDelete.username} deleted`);
+      setUserToDelete(null);
+      fetchPropertiesAndUsers();
+    } catch (err) {
+      showError(err.message || 'Failed to delete user');
+    }
+  };
+
+  const handleDownloadBackup = async () => {
+    try {
+      const token = localStorage.getItem('app_token');
+      const res = await fetch('/api/settings/backup', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Failed to generate backup');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `room-rent-backup-${new Date().toISOString().slice(0, 10)}.db`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+      showSuccess('Database backup downloaded');
+    } catch (err) {
+      showError(err.message || 'Download backup failed');
+    }
+  };
+
+  const handleRestoreBackup = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!window.confirm('WARNING: Restoring will overwrite the current database! Continue?')) {
+      e.target.value = '';
+      return;
+    }
+    setRestoring(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const token = localStorage.getItem('app_token');
+      const res = await fetch('/api/settings/restore', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to restore database');
+      showSuccess('Database restored successfully! Refreshing...');
+      setTimeout(() => window.location.reload(), 1500);
+    } catch (err) {
+      showError(err.message || 'Restore failed');
+    } finally {
+      setRestoring(false);
+      e.target.value = '';
+    }
+  };
 
   useEffect(() => {
     fetchSettings();
@@ -311,7 +475,148 @@ export function SettingsPage() {
         </div>
       </Card>
 
-      {/* 7. Setup & Tools */}
+      {/* 7. Properties Management */}
+      <Card
+        title="Buildings & Properties"
+        subtitle="Manage multi-building residential properties"
+        action={
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={Plus}
+            onClick={() => setIsPropModalOpen(true)}
+          >
+            Add Property
+          </Button>
+        }
+      >
+        <div className="space-y-3">
+          {properties.map((p) => (
+            <div
+              key={p.id}
+              className="flex items-center justify-between p-3 rounded-lg border border-border bg-surface-subtle"
+            >
+              <div>
+                <span className="font-semibold text-sm text-content-primary block">
+                  {p.name}
+                </span>
+                <span className="text-xs text-content-secondary">{p.address}</span>
+              </div>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-primary-bg text-primary border border-primary-border">
+                PROPERTY #{p.id}
+              </span>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* 8. Staff & User Access */}
+      <Card
+        title="Staff & User Management"
+        subtitle="Manage administrative and staff accounts"
+        action={
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={UserPlus}
+            onClick={() => setIsUserModalOpen(true)}
+          >
+            Add Staff User
+          </Button>
+        }
+      >
+        <div className="overflow-x-auto text-xs">
+          <table className="w-full text-left">
+            <thead className="bg-surface-subtle text-content-secondary border-b border-border">
+              <tr>
+                <th className="px-3 py-2">Username</th>
+                <th className="px-3 py-2">Role</th>
+                <th className="px-3 py-2">Status</th>
+                <th className="px-3 py-2 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {usersList.map((u) => (
+                <tr key={u.id} className="hover:bg-surface-subtle transition-colors">
+                  <td className="px-3 py-2.5 font-semibold text-content-primary font-mono">
+                    {u.username}
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                        u.role === 'admin'
+                          ? 'bg-primary-bg text-primary border border-primary-border'
+                          : 'bg-info-bg text-info border border-info-border'
+                      }`}
+                    >
+                      {u.role}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <span
+                      className={`inline-block w-2 h-2 rounded-full mr-1.5 ${
+                        u.active ? 'bg-success' : 'bg-danger'
+                      }`}
+                    />
+                    {u.active ? 'Active' : 'Disabled'}
+                  </td>
+                  <td className="px-3 py-2.5 text-right space-x-2">
+                    {u.id !== user?.id && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleUserActive(u)}
+                          className="text-[11px] font-semibold text-content-secondary hover:text-content-primary underline"
+                        >
+                          {u.active ? 'Deactivate' : 'Activate'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setUserToDelete(u)}
+                          className="text-[11px] font-semibold text-danger hover:underline"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      {/* 9. Database Backup & Restore */}
+      <Card
+        title="Data Backup & Disaster Recovery"
+        subtitle="Snapshot SQLite database or restore from an earlier backup"
+      >
+        <div className="flex flex-wrap items-center gap-4">
+          <Button
+            variant="secondary"
+            icon={Download}
+            type="button"
+            onClick={handleDownloadBackup}
+          >
+            Download SQLite Backup
+          </Button>
+
+          <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface border border-border text-xs font-semibold text-content-primary hover:bg-surface-subtle transition-colors shadow-xs">
+            <Upload className="w-4 h-4 text-primary" />
+            {restoring ? 'Restoring...' : 'Restore Database (.db)'}
+            <input
+              type="file"
+              accept=".db,application/x-sqlite3"
+              onChange={handleRestoreBackup}
+              disabled={restoring}
+              className="hidden"
+            />
+          </label>
+        </div>
+      </Card>
+
+      {/* 10. Setup & Tools */}
       <Card
         title="Setup & Maintenance Tools"
         subtitle="Quickly re-configure building parameters or re-seed data"
@@ -338,6 +643,104 @@ export function SettingsPage() {
         isOpen={isOnboardingOpen}
         onClose={() => setIsOnboardingOpen(false)}
         onComplete={fetchSettings}
+      />
+
+      {/* Add Property Modal */}
+      <Modal
+        isOpen={isPropModalOpen}
+        onClose={() => setIsPropModalOpen(false)}
+        title="Add New Building Property"
+        maxWidth="max-w-md"
+        footer={
+          <div className="flex justify-end gap-2 w-full">
+            <Button variant="secondary" onClick={() => setIsPropModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleCreateProperty}
+              loading={propSubmitting}
+            >
+              Add Property
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <Input
+            label="Property Name"
+            value={newPropName}
+            onChange={(e) => setNewPropName(e.target.value)}
+            placeholder="e.g. Sunrise Apartments Annex"
+            required
+          />
+          <Input
+            label="Address"
+            value={newPropAddress}
+            onChange={(e) => setNewPropAddress(e.target.value)}
+            placeholder="e.g. Street 155, Toul Tompoung, Phnom Penh"
+          />
+        </div>
+      </Modal>
+
+      {/* Add User Modal */}
+      <Modal
+        isOpen={isUserModalOpen}
+        onClose={() => setIsUserModalOpen(false)}
+        title="Create Staff User"
+        maxWidth="max-w-md"
+        footer={
+          <div className="flex justify-end gap-2 w-full">
+            <Button variant="secondary" onClick={() => setIsUserModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleCreateUser}
+              loading={userSubmitting}
+            >
+              Create User
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <Input
+            label="Username"
+            value={newUsername}
+            onChange={(e) => setNewUsername(e.target.value)}
+            placeholder="e.g. manager1"
+            required
+          />
+          <Input
+            label="Initial Password"
+            type="password"
+            value={newUserPassword}
+            onChange={(e) => setNewUserPassword(e.target.value)}
+            placeholder="At least 6 characters"
+            required
+          />
+          <Select
+            label="Role"
+            value={newUserRole}
+            onChange={(e) => setNewUserRole(e.target.value)}
+            options={[
+              { value: 'staff', label: 'Staff (Read & Operations)' },
+              { value: 'admin', label: 'Admin (Full Access)' },
+            ]}
+          />
+        </div>
+      </Modal>
+
+      {/* Delete User Confirm */}
+      <ConfirmDialog
+        isOpen={!!userToDelete}
+        onClose={() => setUserToDelete(null)}
+        onConfirm={handleDeleteUserConfirm}
+        title="Delete User"
+        message={`Are you sure you want to permanently delete user "${userToDelete?.username}"?`}
+        confirmLabel="Delete"
+        confirmVariant="danger"
       />
     </form>
   );

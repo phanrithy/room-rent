@@ -23,6 +23,32 @@ export function AuthProvider({ children }) {
     });
   }, [logout]);
 
+  // Inactivity Auto-Logout (30 minutes)
+  useEffect(() => {
+    if (!token) return;
+
+    const INACTIVITY_LIMIT_MS = 30 * 60 * 1000; // 30 minutes
+    let timeoutId;
+
+    const resetTimer = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        sessionStorage.setItem('session_expired_reason', 'inactivity');
+        logout();
+      }, INACTIVITY_LIMIT_MS);
+    };
+
+    resetTimer();
+
+    const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
+    events.forEach((evt) => window.addEventListener(evt, resetTimer, { passive: true }));
+
+    return () => {
+      clearTimeout(timeoutId);
+      events.forEach((evt) => window.removeEventListener(evt, resetTimer));
+    };
+  }, [token, logout]);
+
   const fetchCurrentUser = useCallback(async () => {
     if (!token) {
       setUser(null);

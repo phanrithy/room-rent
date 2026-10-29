@@ -1,10 +1,13 @@
+import path from 'path';
+import fs from 'fs';
 import { settingsService } from '../services/settings.service.js';
 import { propertyRepository } from '../repositories/property.repository.js';
 import { roomRepository } from '../repositories/room.repository.js';
 import { userRepository } from '../repositories/user.repository.js';
 import { auditRepository } from '../repositories/audit.repository.js';
 import { seedDatabase } from '../db/seed.js';
-import { getDb } from '../db/connection.js';
+import { getDb, closeDb } from '../db/connection.js';
+import { NotFoundError, ValidationError } from '../utils/errors.js';
 
 export function getSettings(req, res, next) {
   try {
@@ -132,6 +135,67 @@ export async function runOnboarding(req, res, next) {
     })();
 
     res.json({ success: true, message: 'Onboarding completed successfully' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export function downloadBackup(req, res, next) {
+  try {
+    const dbPath = path.resolve(process.cwd(), 'data', 'rent.db');
+    if (!fs.existsSync(dbPath)) {
+      throw new NotFoundError('Database file not found');
+    }
+
+    const today = new Date().toISOString().slice(0, 10);
+    res.setHeader('Content-Type', 'application/x-sqlite3');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="room-rent-backup-${today}.db"`
+    );
+    res.download(dbPath);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export function restoreBackup(req, res, next) {
+  try {
+    if (!req.file) {
+      throw new ValidationError('No database backup file uploaded');
+    }
+
+    // Check SQLite magic header
+    const buffer = fs.readFileSync(req.file.path);
+    const header = buffer.slice(0, 16).toString('utf-8');
+    if (!header.startsWith('SQLite format 3')) {
+      fs.unlinkSync(req.file.path);
+      throw new ValidationError(
+        'Uploaded file is not a valid SQLite database',
+        'INVALID_BACKUP_FILE'
+      );
+    }
+
+    const dbPath = path.resolve(process.cwd(), 'data', 'rent.db');
+    closeDb();
+
+    // Copy uploaded file to rent.db
+    fs.copyFileSync(req.file.path, dbPath);
+    fs.unlinkSync(req.file.path);
+
+    // Reconnect and verify
+    const newDb = getDb();
+    newDb.prepare('SELECT COUNT(*) as count FROM users').get();
+
+    auditRepository.create({
+      userId: req.user.id,
+      action: 'RESTORE_DATABASE',
+      tableName: 'database',
+      recordId: null,
+      detail: { restoredAt: new Date().toISOString() },
+    });
+
+    res.json({ success: true, message: 'Database restored successfully' });
   } catch (err) {
     next(err);
   }

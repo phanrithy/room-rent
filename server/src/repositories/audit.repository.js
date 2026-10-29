@@ -37,18 +37,24 @@ export class AuditRepository {
    * @param {string} [param0.q]
    * @returns {{ items: any[], total: number }}
    */
-  findAndCountAll({ page = 1, pageSize = 20, q = '' }) {
+  findAndCountAll({ page = 1, pageSize = 20, q = '', tableName = '' }) {
     const offset = (page - 1) * pageSize;
-    let whereClause = '';
+    const conditions = [];
     const params = [];
 
+    if (tableName && tableName !== 'all') {
+      conditions.push('a.table_name = ?');
+      params.push(tableName);
+    }
     if (q.trim()) {
-      whereClause = `WHERE action LIKE ? OR table_name LIKE ?`;
+      conditions.push('(a.action LIKE ? OR a.table_name LIKE ?)');
       params.push(`%${q.trim()}%`, `%${q.trim()}%`);
     }
 
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
     const totalRow = this.db.prepare(`
-      SELECT COUNT(*) as count FROM audit_logs ${whereClause}
+      SELECT COUNT(*) as count FROM audit_logs a ${whereClause}
     `).get(...params);
 
     const rows = this.db.prepare(`

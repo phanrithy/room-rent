@@ -107,6 +107,15 @@ export class UserRepository {
   }
 
   /**
+   * Update active status
+   * @param {number} id
+   * @param {number} active 0 or 1
+   */
+  updateActive(id, active) {
+    this.db.prepare('UPDATE users SET active = ? WHERE id = ?').run(active ? 1 : 0, id);
+  }
+
+  /**
    * Delete user
    * @param {number} id
    */

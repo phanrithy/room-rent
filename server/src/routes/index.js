@@ -11,6 +11,10 @@ import dashboardRoutes from './dashboard.routes.js';
 import settingsRoutes from './settings.routes.js';
 import reportRoutes from './report.routes.js';
 import expenseRoutes from './expense.routes.js';
+import userRoutes from './user.routes.js';
+import auditRoutes from './audit.routes.js';
+import documentRoutes from './document.routes.js';
+import propertyRoutes from './property.routes.js';
 
 const router = Router();
 
@@ -23,6 +27,10 @@ router.use('/readings', readingRoutes);
 router.use('/invoices', invoiceRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/expenses', expenseRoutes);
+router.use('/users', userRoutes);
+router.use('/audit-logs', auditRoutes);
+router.use('/documents', documentRoutes);
+router.use('/properties', propertyRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/reports', reportRoutes);
