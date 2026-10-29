@@ -11,11 +11,12 @@ import { ReadingsPage } from './pages/ReadingsPage.jsx';
 import { InvoicesPage } from './pages/InvoicesPage.jsx';
 import { InvoiceDetailPage } from './pages/InvoiceDetailPage.jsx';
 import { PaymentsPage } from './pages/PaymentsPage.jsx';
+import { SettingsPage } from './pages/SettingsPage.jsx';
 import { DevGalleryPage } from './pages/DevGalleryPage.jsx';
 import { Skeleton } from './components/common/Skeleton.jsx';
 
-function ProtectedRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth();
+function ProtectedRoute({ children, adminOnly = false }) {
+  const { isAuthenticated, isAdmin, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -31,6 +32,10 @@ function ProtectedRoute({ children }) {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (adminOnly && !isAdmin) {
+    return <Navigate to="/" replace />;
   }
 
   return children;
@@ -58,13 +63,20 @@ export function App() {
         <Route path="invoices" element={<InvoicesPage />} />
         <Route path="invoices/:id" element={<InvoiceDetailPage />} />
         <Route path="payments" element={<PaymentsPage />} />
+        <Route
+          path="settings"
+          element={
+            <ProtectedRoute adminOnly>
+              <SettingsPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="dev/components" element={<DevGalleryPage />} />
 
-        {/* Phase 4+ placeholders */}
+        {/* Phase 5+ placeholders */}
         <Route path="expenses" element={<DevGalleryPage />} />
         <Route path="reports" element={<DevGalleryPage />} />
         <Route path="maintenance" element={<DevGalleryPage />} />
-        <Route path="settings" element={<DevGalleryPage />} />
         <Route path="audit-logs" element={<DevGalleryPage />} />
       </Route>
 

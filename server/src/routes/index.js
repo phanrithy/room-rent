@@ -7,6 +7,8 @@ import contractRoutes from './contract.routes.js';
 import readingRoutes from './reading.routes.js';
 import invoiceRoutes from './invoice.routes.js';
 import paymentRoutes from './payment.routes.js';
+import dashboardRoutes from './dashboard.routes.js';
+import settingsRoutes from './settings.routes.js';
 
 const router = Router();
 
@@ -18,5 +20,7 @@ router.use('/contracts', contractRoutes);
 router.use('/readings', readingRoutes);
 router.use('/invoices', invoiceRoutes);
 router.use('/payments', paymentRoutes);
+router.use('/dashboard', dashboardRoutes);
+router.use('/settings', settingsRoutes);
 
 export default router;
