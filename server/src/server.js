@@ -1,11 +1,14 @@
 import { createApp } from './app.js';
 import { env } from './config/env.js';
 import { runMigrations } from './db/migrator.js';
+import { initCron } from './services/cron.service.js';
 
 try {
   console.log('[Server] Checking and applying database migrations...');
   runMigrations();
   console.log('[Server] Database migrations ready.');
+
+  initCron();
 
   const app = createApp();
 

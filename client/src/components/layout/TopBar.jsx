@@ -34,6 +34,7 @@ export function TopBar({ onOpenMobileDrawer }) {
   const [passwordLoading, setPasswordLoading] = useState(false);
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [showNotifs, setShowNotifs] = useState(false);
 
   const toggleLanguage = () => {
     const nextLang = i18n.language === 'en' ? 'km' : 'en';
@@ -109,6 +110,49 @@ export function TopBar({ onOpenMobileDrawer }) {
           {theme === 'dark' && <Moon className="w-4 h-4 text-blue-400" />}
           {theme === 'system' && <Laptop className="w-4 h-4" />}
         </button>
+
+        {/* Notifications Bell */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setShowNotifs((prev) => !prev)}
+            title="Notifications & Action Alerts"
+            className="relative p-2 rounded-lg border border-border bg-surface hover:bg-surface-hover text-content-secondary hover:text-content-primary transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center"
+          >
+            <Bell className="w-4 h-4" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary" />
+          </button>
+
+          {showNotifs && (
+            <div
+              className="absolute right-0 mt-1.5 w-72 bg-surface border border-border rounded-xl shadow-lg p-3 z-30 space-y-2 text-xs"
+              onClick={() => setShowNotifs(false)}
+            >
+              <div className="flex items-center justify-between pb-2 border-b border-border">
+                <span className="font-bold text-content-primary">Notifications</span>
+                <span className="text-[10px] text-content-muted">Daily Automated</span>
+              </div>
+              <div className="space-y-1.5 py-1">
+                <div className="p-2 bg-surface-subtle border border-border rounded-lg space-y-0.5">
+                  <span className="font-semibold text-content-primary block">
+                    Daily 8:00 AM Cron Ready
+                  </span>
+                  <p className="text-[11px] text-content-muted">
+                    Automated reminders and Bakong KHQR auto-reconciler active.
+                  </p>
+                </div>
+                <div className="p-2 bg-surface-subtle border border-border rounded-lg space-y-0.5">
+                  <span className="font-semibold text-content-primary block">
+                    System Security Active
+                  </span>
+                  <p className="text-[11px] text-content-muted">
+                    Audit logging all financial and operational events.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* User Menu */}
         <div className="relative">

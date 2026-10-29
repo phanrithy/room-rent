@@ -43,8 +43,14 @@ import { formatMoney, formatMonth } from '../utils/format.js';
 export function HomePage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isTenant } = useAuth();
   const { showError } = useToast();
+
+  useEffect(() => {
+    if (isTenant) {
+      navigate('/tenant', { replace: true });
+    }
+  }, [isTenant, navigate]);
 
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);

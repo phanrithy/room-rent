@@ -15,6 +15,9 @@ import userRoutes from './user.routes.js';
 import auditRoutes from './audit.routes.js';
 import documentRoutes from './document.routes.js';
 import propertyRoutes from './property.routes.js';
+import maintenanceRoutes from './maintenance.routes.js';
+import khqrRoutes from './khqr.routes.js';
+import meRoutes from './me.routes.js';
 
 const router = Router();
 
@@ -31,6 +34,9 @@ router.use('/users', userRoutes);
 router.use('/audit-logs', auditRoutes);
 router.use('/documents', documentRoutes);
 router.use('/properties', propertyRoutes);
+router.use('/maintenance', maintenanceRoutes);
+router.use('/khqr', khqrRoutes);
+router.use('/me', meRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/reports', reportRoutes);

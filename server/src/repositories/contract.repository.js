@@ -82,6 +82,19 @@ export class ContractRepository {
   }
 
   /**
+   * Find active contract for a tenant
+   */
+  findActiveByTenant(tenantId) {
+    const row = this.db.prepare(`
+      SELECT c.*, r.room_number, r.floor
+      FROM contracts c
+      JOIN rooms r ON c.room_id = r.id
+      WHERE c.tenant_id = ? AND c.status = 'active'
+    `).get(tenantId);
+    return row ? keysToCamel(row) : null;
+  }
+
+  /**
    * List all active contracts
    */
   findAllActive() {
