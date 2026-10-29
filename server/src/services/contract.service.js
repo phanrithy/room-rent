@@ -1,7 +1,9 @@
+import bcrypt from 'bcrypt';
 import { getDb } from '../db/connection.js';
 import { contractRepository } from '../repositories/contract.repository.js';
 import { roomRepository } from '../repositories/room.repository.js';
 import { tenantRepository } from '../repositories/tenant.repository.js';
+import { userRepository } from '../repositories/user.repository.js';
 import { invoiceRepository } from '../repositories/invoice.repository.js';
 import { auditRepository } from '../repositories/audit.repository.js';
 import {
@@ -77,6 +79,8 @@ export class ContractService {
     }
 
     let createdId;
+    let tenantAccount = null;
+
     const execute = db.transaction(() => {
       createdId = contractRepository.create({
         roomId,
@@ -90,6 +94,41 @@ export class ContractService {
       // Freezing rule & status transition: room becomes occupied
       roomRepository.update(roomId, { status: 'occupied' });
 
+      // Automatically generate a tenant login user account if one doesn't exist yet
+      const existingUser = userRepository.findByTenantId(tenantId);
+      if (!existingUser) {
+        const username = tenant.phone ? tenant.phone.trim() : `tenant_${tenantId}`;
+        const defaultPassword = `Rent#${room.roomNumber}`;
+        const passwordHash = bcrypt.hashSync(defaultPassword, 10);
+
+        userRepository.create({
+          username,
+          passwordHash,
+          role: 'tenant',
+          tenantId,
+          language: tenant.language || 'km',
+          theme: 'system',
+          active: 1,
+        });
+
+        tenantAccount = {
+          username,
+          defaultPassword,
+          name: tenant.name,
+          phone: tenant.phone,
+          roomNumber: room.roomNumber,
+          isNew: true,
+        };
+      } else {
+        tenantAccount = {
+          username: existingUser.username,
+          name: tenant.name,
+          phone: tenant.phone,
+          roomNumber: room.roomNumber,
+          isNew: false,
+        };
+      }
+
       auditRepository.create({
         userId,
         action: 'CREATE_CONTRACT',
@@ -102,12 +141,14 @@ export class ContractService {
           tenantName: tenant.name,
           deposit: finalDeposit,
           rentAmount: finalRent,
+          tenantUsername: tenantAccount.username,
         },
       });
     });
 
     execute();
-    return contractRepository.findById(createdId);
+    const createdContract = contractRepository.findById(createdId);
+    return { ...createdContract, tenantAccount };
   }
 
   /**

@@ -24,7 +24,7 @@ import { setAppLanguage } from '../../i18n/index.js';
 
 export function AppLayout() {
   const { t, i18n } = useTranslation();
-  const { isAdmin } = useAuth();
+  const { isAdmin, isTenant } = useAuth();
   const { toggleTheme } = useTheme();
   const location = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -87,21 +87,26 @@ export function AppLayout() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [toggleTheme, i18n.language]);
 
-  const moreNavItems = [
-    { to: '/tenants', label: t('nav.tenants'), icon: Users },
-    { to: '/contracts', label: t('nav.contracts'), icon: FileSignature },
-    { to: '/payments', label: t('nav.payments'), icon: CreditCard },
-    { to: '/expenses', label: t('nav.expenses'), icon: TrendingDown },
-    { to: '/reports', label: t('nav.reports'), icon: BarChart3 },
-    { to: '/maintenance', label: t('nav.maintenance'), icon: Wrench },
-    ...(isAdmin
-      ? [
-          { to: '/settings', label: t('nav.settings'), icon: Settings },
-          { to: '/audit-logs', label: t('nav.auditLogs'), icon: History },
-        ]
-      : []),
-    { to: '/dev/components', label: t('nav.devGallery'), icon: LayoutGrid },
-  ];
+  const moreNavItems = isTenant
+    ? [
+        { to: '/tenant', label: 'My Room & Invoices', icon: Users },
+        { to: '/maintenance', label: t('nav.maintenance'), icon: Wrench },
+      ]
+    : [
+        { to: '/tenants', label: t('nav.tenants'), icon: Users },
+        { to: '/contracts', label: t('nav.contracts'), icon: FileSignature },
+        { to: '/payments', label: t('nav.payments'), icon: CreditCard },
+        { to: '/expenses', label: t('nav.expenses'), icon: TrendingDown },
+        { to: '/reports', label: t('nav.reports'), icon: BarChart3 },
+        { to: '/maintenance', label: t('nav.maintenance'), icon: Wrench },
+        ...(isAdmin
+          ? [
+              { to: '/settings', label: t('nav.settings'), icon: Settings },
+              { to: '/audit-logs', label: t('nav.auditLogs'), icon: History },
+            ]
+          : []),
+        { to: '/dev/components', label: t('nav.devGallery'), icon: LayoutGrid },
+      ];
 
   return (
     <div className="flex h-screen bg-app overflow-hidden">

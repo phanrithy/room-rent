@@ -22,28 +22,33 @@ import { useAuth } from '../../context/AuthContext.jsx';
 
 export function Sidebar({ collapsed, onToggle }) {
   const { t } = useTranslation();
-  const { isAdmin, isStaff } = useAuth();
+  const { isAdmin, isStaff, isTenant } = useAuth();
   const location = useLocation();
 
-  const navItems = [
-    { to: '/', label: t('nav.home'), icon: Home, exact: true },
-    { to: '/rooms', label: t('nav.rooms'), icon: DoorOpen },
-    { to: '/tenants', label: t('nav.tenants'), icon: Users },
-    { to: '/contracts', label: t('nav.contracts'), icon: FileSignature },
-    { to: '/readings', label: t('nav.readings'), icon: Gauge },
-    { to: '/invoices', label: t('nav.invoices'), icon: Receipt },
-    { to: '/payments', label: t('nav.payments'), icon: CreditCard },
-    { to: '/expenses', label: t('nav.expenses'), icon: TrendingDown },
-    { to: '/reports', label: t('nav.reports'), icon: BarChart3 },
-    { to: '/maintenance', label: t('nav.maintenance'), icon: Wrench },
-    ...(isAdmin
-      ? [
-          { to: '/settings', label: t('nav.settings'), icon: Settings },
-          { to: '/audit-logs', label: t('nav.auditLogs'), icon: History },
-        ]
-      : []),
-    { to: '/dev/components', label: t('nav.devGallery'), icon: LayoutGrid },
-  ];
+  const navItems = isTenant
+    ? [
+        { to: '/tenant', label: t('nav.home'), icon: Home, exact: true },
+        { to: '/maintenance', label: t('nav.maintenance'), icon: Wrench },
+      ]
+    : [
+        { to: '/', label: t('nav.home'), icon: Home, exact: true },
+        { to: '/rooms', label: t('nav.rooms'), icon: DoorOpen },
+        { to: '/tenants', label: t('nav.tenants'), icon: Users },
+        { to: '/contracts', label: t('nav.contracts'), icon: FileSignature },
+        { to: '/readings', label: t('nav.readings'), icon: Gauge },
+        { to: '/invoices', label: t('nav.invoices'), icon: Receipt },
+        { to: '/payments', label: t('nav.payments'), icon: CreditCard },
+        { to: '/expenses', label: t('nav.expenses'), icon: TrendingDown },
+        { to: '/reports', label: t('nav.reports'), icon: BarChart3 },
+        { to: '/maintenance', label: t('nav.maintenance'), icon: Wrench },
+        ...(isAdmin
+          ? [
+              { to: '/settings', label: t('nav.settings'), icon: Settings },
+              { to: '/audit-logs', label: t('nav.auditLogs'), icon: History },
+            ]
+          : []),
+        { to: '/dev/components', label: t('nav.devGallery'), icon: LayoutGrid },
+      ];
 
   return (
     <aside

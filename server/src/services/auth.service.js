@@ -17,7 +17,8 @@ export class AuthService {
    * @returns {Promise<{ token: string, user: object }>}
    */
   async login({ username, password }) {
-    const user = userRepository.findByUsername(username);
+    // Allows logging in with username, phone number, or email
+    const user = userRepository.findByUsernameOrPhone(username);
     if (!user) {
       // Use generic error for security
       throw new UnauthorizedError('Invalid username or password', 'INVALID_CREDENTIALS');

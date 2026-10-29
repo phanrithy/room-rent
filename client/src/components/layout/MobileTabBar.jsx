@@ -1,18 +1,25 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Home, DoorOpen, Gauge, Receipt, Menu } from 'lucide-react';
+import { Home, DoorOpen, Gauge, Receipt, Menu, Wrench } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext.jsx';
 
 export function MobileTabBar({ onOpenMore }) {
   const { t } = useTranslation();
+  const { isTenant } = useAuth();
   const location = useLocation();
 
-  const tabs = [
-    { to: '/', label: t('nav.home'), icon: Home, exact: true },
-    { to: '/rooms', label: t('nav.rooms'), icon: DoorOpen },
-    { to: '/readings', label: t('nav.readings'), icon: Gauge },
-    { to: '/invoices', label: t('nav.invoices'), icon: Receipt },
-  ];
+  const tabs = isTenant
+    ? [
+        { to: '/tenant', label: 'My Room', icon: Home, exact: true },
+        { to: '/maintenance', label: t('nav.maintenance'), icon: Wrench },
+      ]
+    : [
+        { to: '/', label: t('nav.home'), icon: Home, exact: true },
+        { to: '/rooms', label: t('nav.rooms'), icon: DoorOpen },
+        { to: '/readings', label: t('nav.readings'), icon: Gauge },
+        { to: '/invoices', label: t('nav.invoices'), icon: Receipt },
+      ];
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-surface border-t border-border flex items-center justify-around px-2 z-40 select-none shadow-lg">

@@ -16,6 +16,7 @@ import {
   User,
   Filter,
   FileSpreadsheet,
+  QrCode,
 } from 'lucide-react';
 
 import { PageHeader } from '../components/common/PageHeader.jsx';
@@ -32,6 +33,7 @@ import { DataTable } from '../components/common/DataTable.jsx';
 import { Modal } from '../components/common/Modal.jsx';
 import { ConfirmDialog } from '../components/common/ConfirmDialog.jsx';
 import { CsvImportModal } from '../components/modals/CsvImportModal.jsx';
+import { RoomQrPosterModal } from '../components/rooms/RoomQrPosterModal.jsx';
 import { Tabs } from '../components/common/Tabs.jsx';
 import { Skeleton } from '../components/common/Skeleton.jsx';
 import { useToast } from '../context/ToastContext.jsx';
@@ -62,6 +64,7 @@ export function RoomsPage() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [editingRoom, setEditingRoom] = useState(null);
   const [deletingRoom, setDeletingRoom] = useState(null);
+  const [qrModalRoom, setQrModalRoom] = useState(null);
   const [formSubmitting, setFormSubmitting] = useState(false);
 
   // Form State
@@ -284,6 +287,13 @@ export function RoomsPage() {
 
           {isAdmin && (
             <>
+              <IconButton
+                icon={QrCode}
+                label="Scan to Rent QR Poster"
+                size="sm"
+                variant="ghost"
+                onClick={() => setQrModalRoom(r)}
+              />
               <IconButton
                 icon={Wrench}
                 label="Toggle Maintenance"
@@ -529,20 +539,36 @@ export function RoomsPage() {
                   <div className="pt-2 border-t border-border flex items-center justify-between gap-1">
                     {room.status === 'available' ? (
                       isAdmin ? (
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          icon={FileSignature}
-                          className="w-full"
-                          onClick={() => navigate(`/contracts?action=new&roomId=${room.id}`)}
-                        >
-                          {t('rooms.quickContract')}
-                        </Button>
+                        <div className="flex items-center gap-1.5 w-full">
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            icon={FileSignature}
+                            className="flex-1"
+                            onClick={() => navigate(`/contracts?action=new&roomId=${room.id}`)}
+                          >
+                            {t('rooms.quickContract')}
+                          </Button>
+                          <IconButton
+                            icon={QrCode}
+                            label="Scan to Rent QR Poster"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setQrModalRoom(room)}
+                          />
+                        </div>
                       ) : (
                         <span className="text-xs text-success font-medium">Available</span>
                       )
                     ) : (
                       <div className="flex items-center gap-1 w-full justify-end">
+                        <IconButton
+                          icon={QrCode}
+                          label="Scan to Rent QR Poster"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setQrModalRoom(room)}
+                        />
                         {isAdmin && (
                           <>
                             <IconButton
@@ -677,6 +703,13 @@ export function RoomsPage() {
             ? t('rooms.confirmDelete', { number: deletingRoom.roomNumber })
             : ''
         }
+      />
+
+      {/* Room QR Poster Modal */}
+      <RoomQrPosterModal
+        isOpen={!!qrModalRoom}
+        room={qrModalRoom}
+        onClose={() => setQrModalRoom(null)}
       />
 
       {/* CSV Import Modal */}

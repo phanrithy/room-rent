@@ -16,6 +16,8 @@ import {
   Phone,
   ShieldCheck,
   FileText,
+  Copy,
+  Check,
 } from 'lucide-react';
 
 import { PageHeader } from '../components/common/PageHeader.jsx';
@@ -68,6 +70,19 @@ export function ContractsPage() {
   const [rentCents, setRentCents] = useState(15000);
   const [wizardSubmitting, setWizardSubmitting] = useState(false);
   const [wizardError, setWizardError] = useState('');
+
+  // Quick Inline Tenant Creation in Wizard
+  const [isQuickTenantModalOpen, setIsQuickTenantModalOpen] = useState(false);
+  const [quickTenantName, setQuickTenantName] = useState('');
+  const [quickTenantPhone, setQuickTenantPhone] = useState('');
+  const [quickTenantIdNumber, setQuickTenantIdNumber] = useState('');
+  const [quickTenantEmail, setQuickTenantEmail] = useState('');
+  const [quickTenantTelegram, setQuickTenantTelegram] = useState('');
+  const [quickTenantSubmitting, setQuickTenantSubmitting] = useState(false);
+
+  // Post-Contract Tenant Credentials Modal
+  const [createdTenantAccount, setCreatedTenantAccount] = useState(null);
+  const [copiedTenantCreds, setCopiedTenantCreds] = useState(false);
 
   // End Contract / Move-out Modal State
   const [endingContract, setEndingContract] = useState(null);
@@ -148,11 +163,54 @@ export function ContractsPage() {
     }
   };
 
+  const handleQuickCreateTenant = async (e) => {
+    e.preventDefault();
+    if (!quickTenantName.trim()) {
+      showError('Tenant full name is required');
+      return;
+    }
+    if (!quickTenantPhone.trim()) {
+      showError('Tenant phone number is required');
+      return;
+    }
+    if (!quickTenantIdNumber.trim()) {
+      showError('National ID or Passport number is required');
+      return;
+    }
+
+    setQuickTenantSubmitting(true);
+    try {
+      const created = await apiRequest('tenants', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: quickTenantName.trim(),
+          phone: quickTenantPhone.trim(),
+          idNumber: quickTenantIdNumber.trim(),
+          email: quickTenantEmail.trim() || null,
+          telegramChatId: quickTenantTelegram.trim() || null,
+        }),
+      });
+
+      showSuccess(`Tenant ${created.name} added!`);
+      // Reload tenants list for wizard
+      const tenantsRes = await apiRequest('tenants?pageSize=100');
+      setTenantsList(tenantsRes.items);
+      // Auto select the new tenant
+      setSelectedTenantId(String(created.id));
+      setIsQuickTenantModalOpen(false);
+      setStep(3); // advance directly to Terms & Deposit
+    } catch (err) {
+      showError(err.message || 'Failed to create tenant');
+    } finally {
+      setQuickTenantSubmitting(false);
+    }
+  };
+
   const handleWizardSubmit = async () => {
     setWizardSubmitting(true);
     setWizardError('');
     try {
-      await apiRequest('contracts', {
+      const res = await apiRequest('contracts', {
         method: 'POST',
         body: JSON.stringify({
           roomId: parseInt(selectedRoomId, 10),
@@ -165,6 +223,9 @@ export function ContractsPage() {
       });
       showSuccess(t('contracts.newContract') + ' created successfully!');
       setIsWizardOpen(false);
+      if (res?.tenantAccount) {
+        setCreatedTenantAccount(res.tenantAccount);
+      }
       fetchContracts();
     } catch (err) {
       setWizardError(t(`errors.${err.code}`, err.message || 'Failed to create contract'));
@@ -409,9 +470,27 @@ export function ContractsPage() {
           {/* Step 2: Choose Tenant */}
           {step === 2 && (
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-content-primary">
-                {t('contracts.step2Tenant')}
-              </h3>
+              <div className="flex items-center justify-between pb-1">
+                <h3 className="text-sm font-semibold text-content-primary">
+                  {t('contracts.step2Tenant')}
+                </h3>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  icon={Plus}
+                  onClick={() => {
+                    setQuickTenantName('');
+                    setQuickTenantPhone('');
+                    setQuickTenantIdNumber('');
+                    setQuickTenantEmail('');
+                    setQuickTenantTelegram('');
+                    setIsQuickTenantModalOpen(true);
+                  }}
+                >
+                  {i18n.language === 'km' ? '+ បង្កើតអ្នកជួលថ្មី' : '+ Create New Tenant'}
+                </Button>
+              </div>
               <div className="space-y-2 max-h-60 overflow-y-auto p-1">
                 {tenantsList.map((tnt) => (
                   <div
@@ -670,6 +749,145 @@ export function ContractsPage() {
         onClose={() => setContractForDocs(null)}
         contract={contractForDocs}
       />
+
+      {/* Quick Inline Create Tenant Modal */}
+      <Modal
+        isOpen={isQuickTenantModalOpen}
+        onClose={() => setIsQuickTenantModalOpen(false)}
+        title={i18n.language === 'km' ? 'បង្កើតអ្នកជួលថ្មី' : 'Create New Tenant'}
+        size="md"
+      >
+        <form onSubmit={handleQuickCreateTenant} className="space-y-4">
+          <Input
+            label={t('tenants.fullName')}
+            placeholder="e.g. Sokha Chan"
+            value={quickTenantName}
+            onChange={(e) => setQuickTenantName(e.target.value)}
+            required
+          />
+          <Input
+            label={t('tenants.phone')}
+            placeholder="e.g. 012345678"
+            value={quickTenantPhone}
+            onChange={(e) => setQuickTenantPhone(e.target.value)}
+            required
+          />
+          <Input
+            label={t('tenants.idNumber')}
+            placeholder="e.g. ID01020304"
+            value={quickTenantIdNumber}
+            onChange={(e) => setQuickTenantIdNumber(e.target.value)}
+            required
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label={t('tenants.email')}
+              placeholder="tenant@example.com"
+              value={quickTenantEmail}
+              onChange={(e) => setQuickTenantEmail(e.target.value)}
+            />
+            <Input
+              label={t('tenants.telegram')}
+              placeholder="@username"
+              value={quickTenantTelegram}
+              onChange={(e) => setQuickTenantTelegram(e.target.value)}
+            />
+          </div>
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setIsQuickTenantModalOpen(false)}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              loading={quickTenantSubmitting}
+            >
+              {t('common.save')} & Proceed
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Post-Contract Tenant Account Credentials Modal */}
+      <Modal
+        isOpen={!!createdTenantAccount}
+        onClose={() => setCreatedTenantAccount(null)}
+        title={
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+            <span>
+              {i18n.language === 'km'
+                ? 'កិច្ចសន្យាបានបង្កើត & គណនីអ្នកជួលរួចរាល់!'
+                : 'Contract Created & Tenant Login Ready!'}
+            </span>
+          </div>
+        }
+        size="md"
+      >
+        {createdTenantAccount && (
+          <div className="space-y-4">
+            <p className="text-xs text-content-muted">
+              {i18n.language === 'km'
+                ? `កិច្ចសន្យាសម្រាប់បន្ទប់ ${createdTenantAccount.roomNumber} ជាមួយអ្នកជួល ${createdTenantAccount.name} ត្រូវបានបង្កើតដោយជោគជ័យ។ គណនីចូលប្រើប្រព័ន្ធរបស់គាត់៖`
+                : `Contract for Room ${createdTenantAccount.roomNumber} with ${createdTenantAccount.name} has been activated. Tenant portal login details:`}
+            </p>
+
+            <div className="p-4 rounded-xl bg-surface-subtle border border-border space-y-3 text-xs">
+              <div className="flex items-center justify-between pb-2 border-b border-border">
+                <span className="font-semibold text-content-primary">
+                  {createdTenantAccount.name} (Room {createdTenantAccount.roomNumber})
+                </span>
+                <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 font-bold text-[10px]">
+                  {createdTenantAccount.isNew ? 'New Account' : 'Existing Account'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <span className="text-content-muted block">Username / Phone:</span>
+                  <span className="font-mono font-bold text-sm text-content-primary">
+                    {createdTenantAccount.username}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-content-muted block">Default Password:</span>
+                  <span className="font-mono font-bold text-sm text-primary">
+                    {createdTenantAccount.defaultPassword || '(Existing password)'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border">
+              <Button
+                type="button"
+                variant="outline"
+                icon={copiedTenantCreds ? Check : Copy}
+                onClick={() => {
+                  const msg = `Sunrise Apartments - Room ${createdTenantAccount.roomNumber}\nTenant Portal Login:\nUsername: ${createdTenantAccount.username}\nPassword: ${createdTenantAccount.defaultPassword || '(your password)'}\nLogin Link: ${window.location.origin}/login`;
+                  navigator.clipboard.writeText(msg);
+                  setCopiedTenantCreds(true);
+                  showSuccess('Credentials copied! You can paste and send via Telegram or SMS.');
+                  setTimeout(() => setCopiedTenantCreds(false), 2500);
+                }}
+              >
+                {copiedTenantCreds ? 'Copied' : 'Copy for Tenant (Telegram/SMS)'}
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                onClick={() => setCreatedTenantAccount(null)}
+              >
+                Done
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

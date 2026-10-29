@@ -69,6 +69,16 @@ export class TenantRepository {
   }
 
   /**
+   * Find tenant by phone number
+   * @param {string} phone
+   * @returns {any|null}
+   */
+  findByPhone(phone) {
+    const row = this.db.prepare('SELECT * FROM tenants WHERE phone = ?').get(phone);
+    return row ? keysToCamel(row) : null;
+  }
+
+  /**
    * Create tenant
    * @param {object} param0
    * @returns {number}

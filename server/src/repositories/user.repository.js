@@ -20,6 +20,31 @@ export class UserRepository {
   }
 
   /**
+   * Find user by username, phone number, or email
+   * @param {string} identifier
+   * @returns {any|null}
+   */
+  findByUsernameOrPhone(identifier) {
+    const row = this.db.prepare(`
+      SELECT u.* FROM users u
+      LEFT JOIN tenants t ON u.tenant_id = t.id
+      WHERE u.username = ? OR t.phone = ? OR t.email = ?
+      LIMIT 1
+    `).get(identifier, identifier, identifier);
+    return row ? keysToCamel(row) : null;
+  }
+
+  /**
+   * Find user by associated tenant ID
+   * @param {number} tenantId
+   * @returns {any|null}
+   */
+  findByTenantId(tenantId) {
+    const row = this.db.prepare('SELECT * FROM users WHERE tenant_id = ?').get(tenantId);
+    return row ? keysToCamel(row) : null;
+  }
+
+  /**
    * Find user by ID
    * @param {number} id
    * @returns {any|null}

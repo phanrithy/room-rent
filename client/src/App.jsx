@@ -17,6 +17,7 @@ import { SettingsPage } from './pages/SettingsPage.jsx';
 import { AuditLogsPage } from './pages/AuditLogsPage.jsx';
 import { MaintenancePage } from './pages/MaintenancePage.jsx';
 import { TenantPortalPage } from './pages/TenantPortalPage.jsx';
+import { PublicApplyPage } from './pages/PublicApplyPage.jsx';
 import { DevGalleryPage } from './pages/DevGalleryPage.jsx';
 import { Skeleton } from './components/common/Skeleton.jsx';
 
@@ -50,6 +51,7 @@ export function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/apply" element={<PublicApplyPage />} />
 
       {/* Protected application routes */}
       <Route
