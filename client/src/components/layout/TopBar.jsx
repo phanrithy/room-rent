@@ -40,6 +40,9 @@ export function TopBar({ onOpenMobileDrawer, onOpenCommandPalette, onOpenShortcu
   const toggleLanguage = () => {
     const nextLang = i18n.language === 'en' ? 'km' : 'en';
     setAppLanguage(nextLang);
+    if (updatePreferences) {
+      updatePreferences({ language: nextLang }).catch(() => {});
+    }
   };
 
   const handleToggleTheme = () => {

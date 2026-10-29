@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 
 const ThemeContext = createContext();
 
@@ -48,17 +48,18 @@ export function ThemeProvider({ children }) {
     }
   }, [themeSetting]);
 
-  const setTheme = (newTheme) => {
+  const setTheme = useCallback((newTheme) => {
     if (!['light', 'dark', 'system'].includes(newTheme)) return;
     localStorage.setItem('app_theme', newTheme);
     setThemeSetting(newTheme);
-  };
+  }, []);
 
-  const toggleTheme = () => {
-    const nextTheme = activeTheme === 'dark' ? 'light' : 'dark';
+  const toggleTheme = useCallback(() => {
+    const current = document.documentElement.getAttribute('data-theme') || activeTheme;
+    const nextTheme = current === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
     return nextTheme;
-  };
+  }, [activeTheme, setTheme]);
 
   return (
     <ThemeContext.Provider value={{ theme: themeSetting, activeTheme, setTheme, toggleTheme }}>

@@ -58,10 +58,13 @@ export function AuthProvider({ children }) {
     try {
       const data = await apiRequest('auth/me');
       setUser(data.user);
-      if (data.user.language) {
+      // Only set language from server if not already explicitly selected in localStorage
+      const localLang = localStorage.getItem('app_language');
+      if (!localLang && data.user.language) {
         setAppLanguage(data.user.language);
       }
-      if (data.user.theme) {
+      const localTheme = localStorage.getItem('app_theme');
+      if (!localTheme && data.user.theme) {
         setTheme(data.user.theme);
       }
     } catch (err) {
@@ -70,7 +73,7 @@ export function AuthProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, [token, logout, setTheme]);
+  }, [token, logout]);
 
   useEffect(() => {
     fetchCurrentUser();
@@ -84,10 +87,12 @@ export function AuthProvider({ children }) {
     localStorage.setItem('app_token', data.token);
     setToken(data.token);
     setUser(data.user);
-    if (data.user.language) {
+    const chosenLang = localStorage.getItem('app_language');
+    if (!chosenLang && data.user.language) {
       setAppLanguage(data.user.language);
     }
-    if (data.user.theme) {
+    const chosenTheme = localStorage.getItem('app_theme');
+    if (!chosenTheme && data.user.theme) {
       setTheme(data.user.theme);
     }
     return data.user;
