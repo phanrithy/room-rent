@@ -4,6 +4,8 @@ import { useAuth } from './context/AuthContext.jsx';
 import { AppLayout } from './components/layout/AppLayout.jsx';
 import { LoginPage } from './pages/LoginPage.jsx';
 import { HomePage } from './pages/HomePage.jsx';
+import { RoomsPage } from './pages/RoomsPage.jsx';
+import { TenantsPage } from './pages/TenantsPage.jsx';
 import { DevGalleryPage } from './pages/DevGalleryPage.jsx';
 import { Skeleton } from './components/common/Skeleton.jsx';
 
@@ -44,11 +46,11 @@ export function App() {
         }
       >
         <Route index element={<HomePage />} />
+        <Route path="rooms" element={<RoomsPage />} />
+        <Route path="tenants" element={<TenantsPage />} />
         <Route path="dev/components" element={<DevGalleryPage />} />
 
-        {/* Phase 2+ placeholders */}
-        <Route path="rooms" element={<DevGalleryPage />} />
-        <Route path="tenants" element={<DevGalleryPage />} />
+        {/* Phase 3+ placeholders */}
         <Route path="contracts" element={<DevGalleryPage />} />
         <Route path="readings" element={<DevGalleryPage />} />
         <Route path="invoices" element={<DevGalleryPage />} />
