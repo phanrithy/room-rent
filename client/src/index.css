@@ -2,7 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+:root,
+[data-theme="light"] {
   /* Light Theme Tokens */
   --bg-app: #f8fafc;
   --bg-surface: #ffffff;
@@ -55,7 +56,8 @@
   --font-line-height-khmer: 1.7;
 }
 
-[data-theme="dark"] {
+[data-theme="dark"],
+html.dark:not([data-theme="light"]) {
   /* Dark Theme Tokens (soft dark grays, not pure black) */
   --bg-app: #0b1120;
   --bg-surface: #1e293b;

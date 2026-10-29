@@ -24,8 +24,8 @@ import { useToast } from '../../context/ToastContext.jsx';
 
 export function TopBar({ onOpenMobileDrawer, onOpenCommandPalette, onOpenShortcuts }) {
   const { t, i18n } = useTranslation();
-  const { theme, setTheme } = useTheme();
-  const { user, logout, changePassword } = useAuth();
+  const { activeTheme, toggleTheme } = useTheme();
+  const { user, logout, changePassword, updatePreferences } = useAuth();
   const { showSuccess, showError } = useToast();
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -42,10 +42,11 @@ export function TopBar({ onOpenMobileDrawer, onOpenCommandPalette, onOpenShortcu
     setAppLanguage(nextLang);
   };
 
-  const cycleTheme = () => {
-    const order = ['system', 'light', 'dark'];
-    const nextIdx = (order.indexOf(theme) + 1) % order.length;
-    setTheme(order[nextIdx]);
+  const handleToggleTheme = () => {
+    const nextTheme = toggleTheme();
+    if (updatePreferences) {
+      updatePreferences({ theme: nextTheme }).catch(() => {});
+    }
   };
 
   const handlePasswordSubmit = async (e) => {
@@ -127,13 +128,15 @@ export function TopBar({ onOpenMobileDrawer, onOpenCommandPalette, onOpenShortcu
         {/* Theme Switch */}
         <button
           type="button"
-          onClick={cycleTheme}
-          title={`Theme: ${theme}`}
-          className="p-2 rounded-lg border border-border bg-surface hover:bg-surface-hover text-content-secondary hover:text-content-primary transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center"
+          onClick={handleToggleTheme}
+          title={activeTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          className="p-2 rounded-lg border border-border bg-surface hover:bg-surface-hover text-content-secondary hover:text-content-primary transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer"
         >
-          {theme === 'light' && <Sun className="w-4 h-4 text-amber-500" />}
-          {theme === 'dark' && <Moon className="w-4 h-4 text-blue-400" />}
-          {theme === 'system' && <Laptop className="w-4 h-4" />}
+          {activeTheme === 'dark' ? (
+            <Moon className="w-4 h-4 text-blue-400" />
+          ) : (
+            <Sun className="w-4 h-4 text-amber-500" />
+          )}
         </button>
 
         {/* Notifications Bell */}

@@ -31,7 +31,7 @@ export function CommandPaletteModal({ isOpen, onClose }) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { isAdmin, isTenant } = useAuth();
-  const { theme, setTheme } = useTheme();
+  const { activeTheme, toggleTheme } = useTheme();
 
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -99,9 +99,9 @@ export function CommandPaletteModal({ isOpen, onClose }) {
       : []),
     {
       id: 'act-toggle-theme',
-      title: theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme',
-      action: () => setTheme(theme === 'dark' ? 'light' : 'dark'),
-      icon: theme === 'dark' ? Sun : Moon,
+      title: activeTheme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme',
+      action: () => toggleTheme(),
+      icon: activeTheme === 'dark' ? Sun : Moon,
       group: 'Actions',
     },
     {

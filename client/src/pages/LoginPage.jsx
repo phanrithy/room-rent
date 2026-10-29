@@ -20,7 +20,7 @@ const loginSchema = z.object({
 export function LoginPage() {
   const { t, i18n } = useTranslation();
   const { login } = useAuth();
-  const { theme, setTheme } = useTheme();
+  const { activeTheme, toggleTheme } = useTheme();
   const { showSuccess } = useToast();
   const navigate = useNavigate();
 
@@ -69,12 +69,6 @@ export function LoginPage() {
     setAppLanguage(nextLang);
   };
 
-  const cycleTheme = () => {
-    const order = ['system', 'light', 'dark'];
-    const nextIdx = (order.indexOf(theme) + 1) % order.length;
-    setTheme(order[nextIdx]);
-  };
-
   return (
     <div className="min-h-screen bg-app flex flex-col justify-between p-4 sm:p-6 lg:p-8">
       {/* Top Controls */}
@@ -100,12 +94,15 @@ export function LoginPage() {
           {/* Theme Switch */}
           <button
             type="button"
-            onClick={cycleTheme}
-            className="p-2 rounded-lg border border-border bg-surface hover:bg-surface-hover text-content-secondary hover:text-content-primary transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center"
+            onClick={toggleTheme}
+            title={activeTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            className="p-2 rounded-lg border border-border bg-surface hover:bg-surface-hover text-content-secondary hover:text-content-primary transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer"
           >
-            {theme === 'light' && <Sun className="w-4 h-4 text-amber-500" />}
-            {theme === 'dark' && <Moon className="w-4 h-4 text-blue-400" />}
-            {theme === 'system' && <Laptop className="w-4 h-4" />}
+            {activeTheme === 'dark' ? (
+              <Moon className="w-4 h-4 text-blue-400" />
+            ) : (
+              <Sun className="w-4 h-4 text-amber-500" />
+            )}
           </button>
         </div>
       </div>

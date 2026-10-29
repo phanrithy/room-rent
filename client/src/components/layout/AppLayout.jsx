@@ -25,7 +25,7 @@ import { setAppLanguage } from '../../i18n/index.js';
 export function AppLayout() {
   const { t, i18n } = useTranslation();
   const { isAdmin } = useAuth();
-  const { theme, setTheme } = useTheme();
+  const { toggleTheme } = useTheme();
   const location = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -68,10 +68,10 @@ export function AppLayout() {
         return;
       }
 
-      // Ctrl+D: Cycle Theme
+      // Ctrl+D: Toggle Theme
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd' && !isInput) {
         e.preventDefault();
-        setTheme(theme === 'dark' ? 'light' : 'dark');
+        toggleTheme();
         return;
       }
 
@@ -85,7 +85,7 @@ export function AppLayout() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [theme, setTheme, i18n.language]);
+  }, [toggleTheme, i18n.language]);
 
   const moreNavItems = [
     { to: '/tenants', label: t('nav.tenants'), icon: Users },

@@ -54,8 +54,14 @@ export function ThemeProvider({ children }) {
     setThemeSetting(newTheme);
   };
 
+  const toggleTheme = () => {
+    const nextTheme = activeTheme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    return nextTheme;
+  };
+
   return (
-    <ThemeContext.Provider value={{ theme: themeSetting, activeTheme, setTheme }}>
+    <ThemeContext.Provider value={{ theme: themeSetting, activeTheme, setTheme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );
