@@ -18,6 +18,23 @@ export function getInvoice(req, res, next) {
   }
 }
 
+export async function getInvoicePdf(req, res, next) {
+  try {
+    const invoice = invoiceService.getInvoice(req.user, parseInt(req.params.id, 10));
+    const { generateInvoicePdf } = await import('../services/pdf.service.js');
+    const buffer = await generateInvoicePdf(invoice);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      `inline; filename="Invoice-${invoice.month}-${invoice.roomNumber}.pdf"`
+    );
+    res.send(buffer);
+  } catch (err) {
+    next(err);
+  }
+}
+
 export function generateInvoices(req, res, next) {
   try {
     const { month } = req.body;

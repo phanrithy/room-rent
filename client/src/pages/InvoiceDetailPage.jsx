@@ -16,6 +16,7 @@ import {
   Zap,
   Droplets,
   Share2,
+  Download,
 } from 'lucide-react';
 
 import { PageHeader } from '../components/common/PageHeader.jsx';
@@ -75,6 +76,53 @@ export function InvoiceDetailPage() {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleDownloadPdf = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/invoices/${id}/pdf`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) throw new Error('Failed to generate PDF');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Invoice-${invoice.month}-${invoice.roomNumber}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+      showSuccess('PDF downloaded successfully');
+    } catch (err) {
+      showError(err.message || 'Failed to download PDF');
+    }
+  };
+
+  const handleShare = async () => {
+    const invoiceTitle = `Invoice INV-${invoice.month}-${invoice.roomNumber} for Room #${invoice.roomNumber}`;
+    const shareText = `Room Rent Invoice: ${invoiceTitle}\nTotal: $${(invoice.total / 100).toFixed(2)}\nDue Date: ${invoice.dueDate}\nStatus: ${invoice.status.toUpperCase()}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: invoiceTitle,
+          text: shareText,
+          url: window.location.href,
+        });
+      } catch (e) {
+        // Ignored
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(`${shareText}\n${window.location.href}`);
+        showSuccess('Invoice summary copied to clipboard');
+      } catch {
+        showError('Unable to copy to clipboard');
+      }
+    }
   };
 
   const handleOpenPayment = (amountToPay = null) => {
@@ -187,6 +235,12 @@ export function InvoiceDetailPage() {
           ]}
           action={
             <div className="flex items-center gap-2">
+              <Button variant="secondary" icon={Share2} onClick={handleShare}>
+                {t('common.share', 'Share')}
+              </Button>
+              <Button variant="secondary" icon={Download} onClick={handleDownloadPdf}>
+                PDF
+              </Button>
               <Button variant="secondary" icon={Printer} onClick={handlePrint}>
                 {t('common.print')}
               </Button>

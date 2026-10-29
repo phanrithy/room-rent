@@ -11,7 +11,7 @@
     "seed": "node src/db/seed.js",
     "seed:demo": "node src/db/seed.js --demo",
     "seed:clean": "node src/db/seed.js --clean",
-    "test": "node --test test/**/*.test.js",
+    "test": "node --test --test-concurrency=1 test/**/*.test.js",
     "lint": "eslint src/ test/"
   },
   "dependencies": {

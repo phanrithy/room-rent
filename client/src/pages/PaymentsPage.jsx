@@ -10,6 +10,7 @@ import {
   User,
   DoorOpen,
   CheckCircle2,
+  Download,
 } from 'lucide-react';
 
 import { PageHeader } from '../components/common/PageHeader.jsx';
@@ -28,7 +29,7 @@ import { formatMoney, formatDate } from '../utils/format.js';
 export function PaymentsPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { showError } = useToast();
+  const { showError, showSuccess } = useToast();
 
   const [payments, setPayments] = useState([]);
   const [total, setTotal] = useState(0);
@@ -68,6 +69,54 @@ export function PaymentsPage() {
       setSelectedReceipt(data.payment);
     } catch (err) {
       showError('Failed to load receipt');
+    }
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/reports/export/payments', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) throw new Error('Failed to export payments');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'payments.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+      showSuccess('Excel exported');
+    } catch (err) {
+      showError(err.message || 'Export failed');
+    }
+  };
+
+  const handleDownloadReceiptPdf = async (receiptId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/payments/${receiptId}/pdf`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) throw new Error('Failed to download receipt PDF');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Receipt-${String(receiptId).padStart(5, '0')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+      showSuccess('Receipt PDF downloaded');
+    } catch (err) {
+      showError(err.message || 'Failed to download PDF');
     }
   };
 
@@ -143,6 +192,15 @@ export function PaymentsPage() {
       <PageHeader
         title={t('payments.title')}
         subtitle="Chronological log of rental and utility payments received"
+        action={
+          <Button
+            variant="secondary"
+            icon={Download}
+            onClick={handleExportExcel}
+          >
+            Excel
+          </Button>
+        }
       />
 
       {/* Filter Tabs */}
@@ -184,9 +242,18 @@ export function PaymentsPage() {
             <Button variant="secondary" onClick={() => setSelectedReceipt(null)}>
               {t('common.cancel')}
             </Button>
-            <Button variant="primary" icon={Printer} onClick={() => window.print()}>
-              {t('common.print')}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                icon={Download}
+                onClick={() => handleDownloadReceiptPdf(selectedReceipt.id)}
+              >
+                PDF
+              </Button>
+              <Button variant="primary" icon={Printer} onClick={() => window.print()}>
+                {t('common.print')}
+              </Button>
+            </div>
           </div>
         }
       >

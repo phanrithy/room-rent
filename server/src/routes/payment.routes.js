@@ -20,6 +20,7 @@ router.get('/', requireRole('admin', 'staff'), paymentController.listPayments);
 
 // Individual receipt (admin, staff, tenant)
 router.get('/:id', paymentController.getPayment);
+router.get('/:id/pdf', paymentController.getPaymentPdf);
 
 // Record payment (admin, staff)
 router.post('/', requireRole('admin', 'staff'), validate(addPaymentSchema), paymentController.addPayment);

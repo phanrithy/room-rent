@@ -19,6 +19,7 @@ const addChargeSchema = z.object({
 // List and view invoices
 router.get('/', invoiceController.listInvoices);
 router.get('/:id', invoiceController.getInvoice);
+router.get('/:id/pdf', invoiceController.getInvoicePdf);
 
 // Admin and staff actions
 router.post('/generate', requireRole('admin', 'staff'), validate(generateInvoicesSchema), invoiceController.generateInvoices);

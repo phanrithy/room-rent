@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Clock,
   AlertTriangle,
+  Download,
 } from 'lucide-react';
 
 import { PageHeader } from '../components/common/PageHeader.jsx';
@@ -88,6 +89,31 @@ export function InvoicesPage() {
       showError(err.message || 'Failed to generate invoices');
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const query = month !== 'all' ? `?month=${month}` : '';
+      const res = await fetch(`/api/reports/export/invoices${query}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) throw new Error('Failed to export invoices');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `invoices-${month || 'all'}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+      showSuccess('Excel exported');
+    } catch (err) {
+      showError(err.message || 'Export failed');
     }
   };
 
@@ -204,16 +230,25 @@ export function InvoicesPage() {
         title={t('invoices.title')}
         subtitle={t('invoices.subtitle')}
         action={
-          isStaff && (
+          <div className="flex items-center gap-2">
             <Button
-              variant="primary"
-              icon={Sparkles}
-              onClick={handleGenerateInvoices}
-              loading={generating}
+              variant="secondary"
+              icon={Download}
+              onClick={handleExportExcel}
             >
-              {t('invoices.generate')}
+              Excel
             </Button>
-          )
+            {isStaff && (
+              <Button
+                variant="primary"
+                icon={Sparkles}
+                onClick={handleGenerateInvoices}
+                loading={generating}
+              >
+                {t('invoices.generate')}
+              </Button>
+            )}
+          </div>
         }
       />
 
