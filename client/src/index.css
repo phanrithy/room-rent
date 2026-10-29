@@ -129,14 +129,83 @@ html[lang="km"] body,
 
 /* Print Styles */
 @media print {
+  *,
+  *::before,
+  *::after {
+    background: transparent !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
   body {
     background: #ffffff !important;
     color: #000000 !important;
+    font-size: 11pt !important;
+    line-height: 1.4 !important;
   }
-  .no-print {
+
+  /* Hide navigation, action toolbars, drawer backdrops, and interactive controls */
+  header,
+  aside,
+  nav,
+  button,
+  .no-print,
+  [role="dialog"],
+  .fixed.bottom-0 {
     display: none !important;
   }
+
   .print-only {
     display: block !important;
+  }
+
+  /* Full-width clean container */
+  main {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Clean tables */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin: 1rem 0 !important;
+  }
+
+  th,
+  td {
+    border: 1px solid #94a3b8 !important;
+    padding: 6px 8px !important;
+    color: #0f172a !important;
+  }
+
+  th {
+    background: #f1f5f9 !important;
+    font-weight: bold !important;
+  }
+
+  tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Status badges in print: clean bordered pill with dark text */
+  .badge,
+  [class*="rounded-full"] {
+    border: 1px solid #64748b !important;
+    color: #0f172a !important;
+    background: transparent !important;
+  }
+
+  /* QR codes and essential images */
+  img,
+  svg {
+    max-width: 100% !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 }

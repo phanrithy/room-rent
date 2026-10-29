@@ -259,5 +259,22 @@
     "INVOICE_ALREADY_PAID": "This invoice is already fully paid",
     "CONTRACT_ACTIVE_EXISTS": "There is already an active contract for this room",
     "TOO_MANY_REQUESTS": "Too many requests. Please wait a moment."
+  },
+  "palette": {
+    "placeholder": "Type a command or search (rooms, tenants, actions)...",
+    "noResults": "No matching commands or records found."
+  },
+  "shortcuts": {
+    "title": "Keyboard Shortcuts",
+    "navigation": "Navigation & Search",
+    "commandPalette": "Open Command Palette & Search",
+    "showHelp": "Show this keyboard shortcuts guide",
+    "closeModal": "Close open modal, palette, or menu",
+    "appControls": "App Controls & Appearance",
+    "toggleSidebar": "Toggle sidebar expanded / collapsed",
+    "toggleTheme": "Cycle Light, Dark, and System theme",
+    "toggleLanguage": "Toggle between Khmer and English",
+    "printing": "Documents & Actions",
+    "printPage": "Print active report, invoice, or page"
   }
 }

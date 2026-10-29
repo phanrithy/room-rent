@@ -12,6 +12,7 @@ import {
   KeyRound,
   User,
   ChevronDown,
+  Keyboard,
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -21,7 +22,7 @@ import { Input } from '../common/Input.jsx';
 import { Button } from '../common/Button.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 
-export function TopBar({ onOpenMobileDrawer }) {
+export function TopBar({ onOpenMobileDrawer, onOpenCommandPalette, onOpenShortcuts }) {
   const { t, i18n } = useTranslation();
   const { theme, setTheme } = useTheme();
   const { user, logout, changePassword } = useAuth();
@@ -88,6 +89,30 @@ export function TopBar({ onOpenMobileDrawer }) {
 
       {/* Right side: Global controls (Search, Language, Theme, User) */}
       <div className="flex items-center gap-2 sm:gap-3">
+        {/* Quick Search / Command Palette Trigger */}
+        <button
+          type="button"
+          onClick={onOpenCommandPalette}
+          title="Search & Command Palette (Ctrl+K or /)"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-surface-subtle hover:bg-surface-hover text-xs text-content-muted transition-colors min-h-[36px]"
+        >
+          <Search className="w-3.5 h-3.5 text-content-muted" />
+          <span className="hidden md:inline">{t('common.search')}</span>
+          <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] bg-surface border border-border rounded font-mono text-content-secondary shadow-xs">
+            ⌘K
+          </kbd>
+        </button>
+
+        {/* Shortcuts Guide Button */}
+        <button
+          type="button"
+          onClick={onOpenShortcuts}
+          title="Keyboard Shortcuts (?)"
+          className="hidden sm:flex items-center justify-center p-2 rounded-lg border border-border bg-surface hover:bg-surface-hover text-content-secondary hover:text-content-primary transition-colors min-h-[36px] min-w-[36px]"
+        >
+          <Keyboard className="w-4 h-4" />
+        </button>
+
         {/* Language Switch */}
         <button
           type="button"

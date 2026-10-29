@@ -1,0 +1,20 @@
+{
+  "name": "Room Rent Cambodia - Sunrise Residence",
+  "short_name": "RoomRent",
+  "description": "Small building room rent and property management web app for Cambodia landlords",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "categories": ["business", "finance", "productivity"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
