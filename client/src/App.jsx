@@ -6,6 +6,11 @@ import { LoginPage } from './pages/LoginPage.jsx';
 import { HomePage } from './pages/HomePage.jsx';
 import { RoomsPage } from './pages/RoomsPage.jsx';
 import { TenantsPage } from './pages/TenantsPage.jsx';
+import { ContractsPage } from './pages/ContractsPage.jsx';
+import { ReadingsPage } from './pages/ReadingsPage.jsx';
+import { InvoicesPage } from './pages/InvoicesPage.jsx';
+import { InvoiceDetailPage } from './pages/InvoiceDetailPage.jsx';
+import { PaymentsPage } from './pages/PaymentsPage.jsx';
 import { DevGalleryPage } from './pages/DevGalleryPage.jsx';
 import { Skeleton } from './components/common/Skeleton.jsx';
 
@@ -48,13 +53,14 @@ export function App() {
         <Route index element={<HomePage />} />
         <Route path="rooms" element={<RoomsPage />} />
         <Route path="tenants" element={<TenantsPage />} />
+        <Route path="contracts" element={<ContractsPage />} />
+        <Route path="readings" element={<ReadingsPage />} />
+        <Route path="invoices" element={<InvoicesPage />} />
+        <Route path="invoices/:id" element={<InvoiceDetailPage />} />
+        <Route path="payments" element={<PaymentsPage />} />
         <Route path="dev/components" element={<DevGalleryPage />} />
 
-        {/* Phase 3+ placeholders */}
-        <Route path="contracts" element={<DevGalleryPage />} />
-        <Route path="readings" element={<DevGalleryPage />} />
-        <Route path="invoices" element={<DevGalleryPage />} />
-        <Route path="payments" element={<DevGalleryPage />} />
+        {/* Phase 4+ placeholders */}
         <Route path="expenses" element={<DevGalleryPage />} />
         <Route path="reports" element={<DevGalleryPage />} />
         <Route path="maintenance" element={<DevGalleryPage />} />
