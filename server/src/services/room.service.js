@@ -202,6 +202,68 @@ export class RoomService {
     execute();
     return { success: true };
   }
+
+  /**
+   * Bulk import rooms from parsed rows
+   * @param {number} userId
+   * @param {Array<{ roomNumber: string, floor?: number, monthlyRent: number, note?: string }>} rows
+   */
+  bulkImport(userId, rows) {
+    const db = getDb();
+    const defaultProp = propertyRepository.findFirst();
+    if (!defaultProp) throw new NotFoundError('No default property found');
+    const propertyId = defaultProp.id;
+
+    const imported = [];
+    const errors = [];
+
+    db.transaction(() => {
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const rowNum = i + 1;
+
+        if (!row.roomNumber || String(row.roomNumber).trim() === '') {
+          errors.push({ row: rowNum, error: 'Room number is required' });
+          continue;
+        }
+
+        const roomNumber = String(row.roomNumber).trim();
+        const existing = roomRepository.findByNumber(propertyId, roomNumber);
+        if (existing) {
+          errors.push({ row: rowNum, error: `Room ${roomNumber} already exists` });
+          continue;
+        }
+
+        const floor = parseInt(row.floor || '1', 10);
+        let monthlyRent = parseInt(row.monthlyRent, 10);
+        if (isNaN(monthlyRent) || monthlyRent < 0) {
+          errors.push({ row: rowNum, error: `Invalid monthly rent for room ${roomNumber}` });
+          continue;
+        }
+
+        const id = roomRepository.create({
+          propertyId,
+          roomNumber,
+          floor,
+          monthlyRent,
+          status: 'available',
+          note: row.note ? String(row.note).trim() : null,
+        });
+
+        auditRepository.create({
+          userId,
+          action: 'BULK_IMPORT_ROOM',
+          tableName: 'rooms',
+          recordId: id,
+          detail: { roomNumber, floor, monthlyRent },
+        });
+
+        imported.push({ id, roomNumber });
+      }
+    })();
+
+    return { imported: imported.length, errors, items: imported };
+  }
 }
 
 export const roomService = new RoomService();

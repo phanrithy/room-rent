@@ -63,6 +63,19 @@ export class RoomRepository {
   }
 
   /**
+   * Find all rooms without pagination
+   * @param {number|null} [propertyId]
+   * @returns {any[]}
+   */
+  findAll(propertyId = null) {
+    const stmt = propertyId
+      ? this.db.prepare('SELECT * FROM rooms WHERE property_id = ? ORDER BY floor ASC, room_number ASC')
+      : this.db.prepare('SELECT * FROM rooms ORDER BY floor ASC, room_number ASC');
+    const rows = propertyId ? stmt.all(propertyId) : stmt.all();
+    return rows.map(keysToCamel);
+  }
+
+  /**
    * Find room by ID
    * @param {number} id
    * @returns {any|null}

@@ -33,6 +33,7 @@ router.get('/', requireRole('admin', 'staff'), tenantController.listTenants);
 router.get('/:id', tenantController.getTenant);
 
 // Only admin can create, update, or delete tenants
+router.post('/import', requireRole('admin'), tenantController.bulkImportTenants);
 router.post('/', requireRole('admin'), validate(createTenantSchema), tenantController.createTenant);
 router.patch('/:id', requireRole('admin'), validate(updateTenantSchema), tenantController.updateTenant);
 router.delete('/:id', requireRole('admin'), tenantController.deleteTenant);

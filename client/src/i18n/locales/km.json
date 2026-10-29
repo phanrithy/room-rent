@@ -187,12 +187,51 @@
     "receipt": "បង្កាន់ដៃទទួលប្រាក់",
     "downloadReceipt": "ទាញយកបង្កាន់ដៃ"
   },
+  "expenses": {
+    "title": "ការចំណាយ",
+    "subtitle": "តាមដានថ្លៃជួសជុល សម្អាត ទឹកភ្លើង និងការចំណាយប្រតិបត្តិការអាគារ",
+    "recordExpense": "កត់ត្រាការចំណាយ",
+    "category": "ប្រភេទចំណាយ",
+    "amount": "ចំនួនទឹកប្រាក់",
+    "spentAt": "កាលបរិច្ឆេទចំណាយ",
+    "note": "ការពិពណ៌នា / ចំណាំ",
+    "room": "បន្ទប់ពាក់ព័ន្ធ (ជម្រើស)",
+    "categories": {
+      "repair": "ជួសជុល និងថែទាំ",
+      "cleaning": "ការសម្អាត",
+      "utilities": "ទឹកភ្លើងអាគារ",
+      "other": "ចំណាយផ្សេងៗ"
+    },
+    "totalSpent": "ចំណាយសរុប",
+    "confirmDelete": "លុបការចំណាយ",
+    "confirmDeleteDesc": "តើអ្នកពិតជាចង់លុបកំណត់ត្រាចំណាយនេះមែនទេ?"
+  },
   "reports": {
     "title": "របាយការណ៍ហិរញ្ញវត្ថុ",
-    "income": "ចំណូលសរុប",
-    "expenses": "ចំណាយសរុប",
+    "subtitle": "របាយការណ៍ប្រតិបត្តិការប្រចាំខែ និងប្រចាំឆ្នាំ",
+    "monthlyStatement": "របាយការណ៍ប្រចាំខែ",
+    "yearlyStatement": "លទ្ធផលប្រចាំឆ្នាំ",
+    "revenue": "ចំណូលទទួលបានជាក់ស្តែង",
+    "expenses": "ការចំណាយប្រតិបត្តិការ",
     "netProfit": "ប្រាក់ចំណេញសុទ្ធ",
-    "exportExcel": "ទាញយកជា Excel"
+    "occupancy": "អត្រាមានអ្នកជួល",
+    "billedBreakdown": "ការបែងចែកវិក្កយបត្រចេញ",
+    "billedTotal": "សរុបវិក្កយបត្រ",
+    "collected": "ប្រមូលបាន",
+    "outstanding": "នៅសល់",
+    "expenseBreakdown": "ការចំណាយតាមប្រភេទ",
+    "exportMonth": "ទាញយក Excel ប្រចាំខែ",
+    "exportYear": "ទាញយក Excel ប្រចាំឆ្នាំ"
+  },
+  "import": {
+    "titleRooms": "នាំចូលបន្ទប់ពី CSV",
+    "titleTenants": "នាំចូលអ្នកជួលពី CSV",
+    "instructions": "បញ្ចូលឯកសារ CSV ឬបិទភ្ជាប់ទិន្នន័យ CSV ខាងក្រោម។ ជួរឈរតម្រូវ៖ ",
+    "sampleCsv": "ទាញយកគំរូ CSV",
+    "preview": "ពិនិត្យមើលទិន្នន័យ និងផ្ទៀងផ្ទាត់",
+    "validRows": "{{count}} ជួរត្រឹមត្រូវរួចរាល់សម្រាប់ការនាំចូល",
+    "errorRows": "{{count}} ជួរមានកំហុស",
+    "importButton": "នាំចូល {{count}} កំណត់ត្រា"
   },
   "settings": {
     "title": "ការកំណត់ប្រព័ន្ធ",

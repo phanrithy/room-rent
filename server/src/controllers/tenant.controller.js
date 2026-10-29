@@ -44,3 +44,13 @@ export function deleteTenant(req, res, next) {
     next(err);
   }
 }
+
+export function bulkImportTenants(req, res, next) {
+  try {
+    const { rows } = req.body;
+    const result = tenantService.bulkImport(req.user.id, rows || []);
+    res.status(201).json(result);
+  } catch (err) {
+    next(err);
+  }
+}

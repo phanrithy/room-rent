@@ -10,6 +10,7 @@ import paymentRoutes from './payment.routes.js';
 import dashboardRoutes from './dashboard.routes.js';
 import settingsRoutes from './settings.routes.js';
 import reportRoutes from './report.routes.js';
+import expenseRoutes from './expense.routes.js';
 
 const router = Router();
 
@@ -21,6 +22,7 @@ router.use('/contracts', contractRoutes);
 router.use('/readings', readingRoutes);
 router.use('/invoices', invoiceRoutes);
 router.use('/payments', paymentRoutes);
+router.use('/expenses', expenseRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/reports', reportRoutes);

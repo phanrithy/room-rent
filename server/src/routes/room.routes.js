@@ -32,6 +32,7 @@ router.get('/floors', requireRole('admin', 'staff'), roomController.getFloors);
 router.get('/:id', requireRole('admin', 'staff'), roomController.getRoom);
 
 // Only admin can create, update, or delete rooms
+router.post('/import', requireRole('admin'), roomController.bulkImportRooms);
 router.post('/', requireRole('admin'), validate(createRoomSchema), roomController.createRoom);
 router.patch('/:id', requireRole('admin'), validate(updateRoomSchema), roomController.updateRoom);
 router.delete('/:id', requireRole('admin'), roomController.deleteRoom);

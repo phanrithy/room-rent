@@ -5,8 +5,14 @@ import { authenticateToken, requireRole } from '../middleware/auth.middleware.js
 const router = Router();
 router.use(authenticateToken);
 
-// Export invoices and payments to Excel (Admin and Staff)
+// Financial statements (Admin and Staff)
+router.get('/monthly', requireRole('admin', 'staff'), reportController.getMonthlyReport);
+router.get('/yearly', requireRole('admin', 'staff'), reportController.getYearlyReport);
+
+// Excel Exports (Admin and Staff)
 router.get('/export/invoices', requireRole('admin', 'staff'), reportController.exportInvoices);
 router.get('/export/payments', requireRole('admin', 'staff'), reportController.exportPayments);
+router.get('/export/monthly', requireRole('admin', 'staff'), reportController.exportMonthlyReport);
+router.get('/export/yearly', requireRole('admin', 'staff'), reportController.exportYearlyReport);
 
 export default router;

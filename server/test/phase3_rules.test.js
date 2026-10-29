@@ -12,6 +12,7 @@ describe('Phase 3: Core Financial & Business Rules', () => {
   let server;
   let baseUrl;
   let adminToken;
+  let adminId;
 
   before(async () => {
     await seedDatabase({ demo: true });
@@ -29,6 +30,10 @@ describe('Phase 3: Core Financial & Business Rules', () => {
       body: JSON.stringify({ username: 'admin', password: 'Admin#2026!' }),
     });
     adminToken = (await resAdmin.json()).token;
+
+    const db = getDb();
+    const adminUser = db.prepare("SELECT id FROM users WHERE username = 'admin'").get();
+    adminId = adminUser ? adminUser.id : 1;
   });
 
   after(() => {
@@ -76,7 +81,7 @@ describe('Phase 3: Core Financial & Business Rules', () => {
     const tenant = db.prepare('SELECT id FROM tenants LIMIT 1').get();
 
     // Create contract
-    const contract = contractService.createContract(1, {
+    const contract = contractService.createContract(adminId, {
       roomId: room.id,
       tenantId: tenant.id,
       startDate: '2026-11-01',
@@ -92,7 +97,7 @@ describe('Phase 3: Core Financial & Business Rules', () => {
     // Attempting to create another contract on the occupied room must fail with ROOM_NOT_AVAILABLE
     assert.throws(
       () => {
-        contractService.createContract(1, {
+        contractService.createContract(adminId, {
           roomId: room.id,
           tenantId: tenant.id,
           startDate: '2026-11-01',
@@ -103,7 +108,7 @@ describe('Phase 3: Core Financial & Business Rules', () => {
     );
 
     // End contract
-    const endRes = contractService.endContract(1, contract.id);
+    const endRes = contractService.endContract(adminId, contract.id);
     assert.strictEqual(endRes.success, true);
 
     // Verify room is now available again
@@ -164,7 +169,7 @@ describe('Phase 3: Core Financial & Business Rules', () => {
     // Step A: Overpayment attempt ($150 on $130 balance) must fail
     assert.throws(
       () => {
-        paymentService.addPayment(1, {
+        paymentService.addPayment(adminId, {
           invoiceId: invId,
           amount: 15000, // > 13000
           method: 'cash',
@@ -174,7 +179,7 @@ describe('Phase 3: Core Financial & Business Rules', () => {
     );
 
     // Step B: Partial payment of $50 (5000 cents)
-    const partialRes = paymentService.addPayment(1, {
+    const partialRes = paymentService.addPayment(adminId, {
       invoiceId: invId,
       amount: 5000,
       method: 'cash',
@@ -184,7 +189,7 @@ describe('Phase 3: Core Financial & Business Rules', () => {
     assert.ok(partialRes.invoice.khqrString, 'Partial payment must regenerate KHQR string for remaining balance');
 
     // Step C: Pay remaining balance of $80 (8000 cents)
-    const fullRes = paymentService.addPayment(1, {
+    const fullRes = paymentService.addPayment(adminId, {
       invoiceId: invId,
       amount: 8000,
       method: 'qr',

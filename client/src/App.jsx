@@ -11,6 +11,8 @@ import { ReadingsPage } from './pages/ReadingsPage.jsx';
 import { InvoicesPage } from './pages/InvoicesPage.jsx';
 import { InvoiceDetailPage } from './pages/InvoiceDetailPage.jsx';
 import { PaymentsPage } from './pages/PaymentsPage.jsx';
+import { ExpensesPage } from './pages/ExpensesPage.jsx';
+import { ReportsPage } from './pages/ReportsPage.jsx';
 import { SettingsPage } from './pages/SettingsPage.jsx';
 import { DevGalleryPage } from './pages/DevGalleryPage.jsx';
 import { Skeleton } from './components/common/Skeleton.jsx';
@@ -73,9 +75,8 @@ export function App() {
         />
         <Route path="dev/components" element={<DevGalleryPage />} />
 
-        {/* Phase 5+ placeholders */}
-        <Route path="expenses" element={<DevGalleryPage />} />
-        <Route path="reports" element={<DevGalleryPage />} />
+        <Route path="expenses" element={<ExpensesPage />} />
+        <Route path="reports" element={<ReportsPage />} />
         <Route path="maintenance" element={<DevGalleryPage />} />
         <Route path="audit-logs" element={<DevGalleryPage />} />
       </Route>

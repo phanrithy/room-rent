@@ -187,12 +187,51 @@
     "receipt": "Receipt",
     "downloadReceipt": "Download Receipt"
   },
+  "expenses": {
+    "title": "Expenses",
+    "subtitle": "Track building repairs, cleaning, utilities, and operating costs",
+    "recordExpense": "Record Expense",
+    "category": "Category",
+    "amount": "Amount",
+    "spentAt": "Date Spent",
+    "note": "Description / Note",
+    "room": "Associated Room (Optional)",
+    "categories": {
+      "repair": "Repair & Maintenance",
+      "cleaning": "Cleaning & Sanitation",
+      "utilities": "Building Utilities",
+      "other": "Other Expenses"
+    },
+    "totalSpent": "Total Spent",
+    "confirmDelete": "Delete Expense",
+    "confirmDeleteDesc": "Are you sure you want to delete this expense record?"
+  },
   "reports": {
     "title": "Financial Reports",
-    "income": "Total Income",
-    "expenses": "Total Expenses",
+    "subtitle": "Monthly & annual operating statement and cash flow breakdown",
+    "monthlyStatement": "Monthly Statement",
+    "yearlyStatement": "Annual Performance",
+    "revenue": "Revenue Collected",
+    "expenses": "Operating Expenses",
     "netProfit": "Net Profit",
-    "exportExcel": "Export to Excel"
+    "occupancy": "Occupancy Rate",
+    "billedBreakdown": "Billed Invoices Breakdown",
+    "billedTotal": "Total Billed",
+    "collected": "Collected",
+    "outstanding": "Outstanding",
+    "expenseBreakdown": "Expenses by Category",
+    "exportMonth": "Export Month (.xlsx)",
+    "exportYear": "Export Annual (.xlsx)"
+  },
+  "import": {
+    "titleRooms": "Import Rooms from CSV",
+    "titleTenants": "Import Tenants from CSV",
+    "instructions": "Upload a CSV file or paste CSV content below. Required columns: ",
+    "sampleCsv": "Download Sample CSV",
+    "preview": "Data Preview & Validation",
+    "validRows": "{{count}} valid row(s) ready to import",
+    "errorRows": "{{count}} error row(s) found",
+    "importButton": "Import {{count}} Records"
   },
   "settings": {
     "title": "Settings",

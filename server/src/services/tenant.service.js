@@ -151,6 +151,57 @@ export class TenantService {
     execute();
     return { success: true };
   }
+
+  /**
+   * Bulk import tenants from parsed rows
+   * @param {number} userId
+   * @param {Array<{ name: string, phone: string, idNumber?: string, email?: string }>} rows
+   */
+  bulkImport(userId, rows) {
+    const db = getDb();
+    const imported = [];
+    const errors = [];
+
+    db.transaction(() => {
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const rowNum = i + 1;
+
+        if (!row.name || String(row.name).trim() === '') {
+          errors.push({ row: rowNum, error: 'Tenant name is required' });
+          continue;
+        }
+        if (!row.phone || String(row.phone).trim() === '') {
+          errors.push({ row: rowNum, error: 'Phone number is required' });
+          continue;
+        }
+
+        const name = String(row.name).trim();
+        const phone = String(row.phone).trim();
+        const idNumber = row.idNumber ? String(row.idNumber).trim() : null;
+        const email = row.email ? String(row.email).trim() : null;
+
+        const id = tenantRepository.create({
+          name,
+          phone,
+          idNumber,
+          email,
+        });
+
+        auditRepository.create({
+          userId,
+          action: 'BULK_IMPORT_TENANT',
+          tableName: 'tenants',
+          recordId: id,
+          detail: { name, phone },
+        });
+
+        imported.push({ id, name, phone });
+      }
+    })();
+
+    return { imported: imported.length, errors, items: imported };
+  }
 }
 
 export const tenantService = new TenantService();

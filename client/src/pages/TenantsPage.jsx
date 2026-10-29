@@ -14,6 +14,7 @@ import {
   DoorOpen,
   Calendar,
   Languages,
+  FileSpreadsheet,
 } from 'lucide-react';
 
 import { PageHeader } from '../components/common/PageHeader.jsx';
@@ -30,6 +31,7 @@ import { Modal } from '../components/common/Modal.jsx';
 import { Drawer } from '../components/common/Drawer.jsx';
 import { ConfirmDialog } from '../components/common/ConfirmDialog.jsx';
 import { Avatar } from '../components/common/Avatar.jsx';
+import { CsvImportModal } from '../components/modals/CsvImportModal.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { apiRequest } from '../utils/api.js';
@@ -48,6 +50,7 @@ export function TenantsPage() {
 
   // Modals & Drawers
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [editingTenant, setEditingTenant] = useState(null);
   const [deletingTenant, setDeletingTenant] = useState(null);
   const [selectedTenantDetail, setSelectedTenantDetail] = useState(null);
@@ -279,9 +282,18 @@ export function TenantsPage() {
         subtitle={t('tenants.subtitle')}
         action={
           isAdmin && (
-            <Button variant="primary" icon={Plus} onClick={openAddModal}>
-              {t('tenants.addTenant')}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                icon={FileSpreadsheet}
+                onClick={() => setIsImportModalOpen(true)}
+              >
+                CSV
+              </Button>
+              <Button variant="primary" icon={Plus} onClick={openAddModal}>
+                {t('tenants.addTenant')}
+              </Button>
+            </div>
           )
         }
       />
@@ -564,6 +576,21 @@ export function TenantsPage() {
             ? t('tenants.confirmDelete', { name: deletingTenant.name })
             : ''
         }
+      />
+
+      {/* CSV Import Modal */}
+      <CsvImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        title={t('import.titleTenants')}
+        type="tenants"
+        onImport={(rows) =>
+          apiRequest('tenants/import', {
+            method: 'POST',
+            body: JSON.stringify({ rows }),
+          })
+        }
+        onSuccess={fetchTenants}
       />
     </div>
   );

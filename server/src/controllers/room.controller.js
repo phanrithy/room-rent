@@ -54,3 +54,13 @@ export function deleteRoom(req, res, next) {
     next(err);
   }
 }
+
+export function bulkImportRooms(req, res, next) {
+  try {
+    const { rows } = req.body;
+    const result = roomService.bulkImport(req.user.id, rows || []);
+    res.status(201).json(result);
+  } catch (err) {
+    next(err);
+  }
+}

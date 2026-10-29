@@ -103,3 +103,109 @@ export async function exportPaymentsToExcel(month = null) {
 
   return await workbook.xlsx.writeBuffer();
 }
+
+export async function exportMonthlyReportToExcel(month) {
+  const { reportService } = await import('./report.service.js');
+  const report = reportService.getMonthlyReport(month);
+
+  const workbook = new ExcelJS.Workbook();
+  const summarySheet = workbook.addWorksheet(`Summary - ${month}`);
+
+  summarySheet.columns = [
+    { header: 'Metric', key: 'metric', width: 30 },
+    { header: 'Value ($ / %)', key: 'val', width: 20 },
+  ];
+
+  summarySheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+  summarySheet.getRow(1).fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FF1E293B' },
+  };
+
+  summarySheet.addRows([
+    { metric: 'Billing Month', val: month },
+    { metric: 'Invoices Generated', val: report.billed.invoiceCount },
+    { metric: 'Total Rent Billed ($)', val: (report.billed.rent / 100).toFixed(2) },
+    { metric: 'Total Electricity Billed ($)', val: (report.billed.electric / 100).toFixed(2) },
+    { metric: 'Total Water Billed ($)', val: (report.billed.water / 100).toFixed(2) },
+    { metric: 'Total Extra Charges ($)', val: (report.billed.otherCharges / 100).toFixed(2) },
+    { metric: 'Total Late Fees ($)', val: (report.billed.lateFee / 100).toFixed(2) },
+    { metric: 'Total Billed ($)', val: (report.billed.total / 100).toFixed(2) },
+    { metric: 'Actual Revenue Collected ($)', val: (report.cashFlow.revenue / 100).toFixed(2) },
+    { metric: 'Total Operating Expenses ($)', val: (report.cashFlow.expenses / 100).toFixed(2) },
+    { metric: 'Net Operating Profit ($)', val: (report.cashFlow.netProfit / 100).toFixed(2) },
+    { metric: 'Occupancy Rate (%)', val: `${report.occupancy.rate}%` },
+  ]);
+
+  const expenseSheet = workbook.addWorksheet('Expense Breakdown');
+  expenseSheet.columns = [
+    { header: 'Expense Category', key: 'cat', width: 25 },
+    { header: 'Total Spent ($)', key: 'amount', width: 18 },
+    { header: 'Count', key: 'count', width: 12 },
+  ];
+  expenseSheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+  expenseSheet.getRow(1).fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FFDC2626' },
+  };
+
+  for (const c of report.cashFlow.expenseCategories) {
+    expenseSheet.addRow({
+      cat: c.category.toUpperCase(),
+      amount: (c.totalAmount / 100).toFixed(2),
+      count: c.count,
+    });
+  }
+
+  return await workbook.xlsx.writeBuffer();
+}
+
+export async function exportYearlyReportToExcel(year) {
+  const { reportService } = await import('./report.service.js');
+  const report = reportService.getYearlyReport(year);
+
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet(`Annual - ${year}`);
+
+  worksheet.columns = [
+    { header: 'Month', key: 'month', width: 14 },
+    { header: 'Billed Total ($)', key: 'billed', width: 18 },
+    { header: 'Revenue Collected ($)', key: 'revenue', width: 22 },
+    { header: 'Operating Expenses ($)', key: 'expenses', width: 22 },
+    { header: 'Net Profit ($)', key: 'profit', width: 18 },
+    { header: 'Occupancy Rate (%)', key: 'occupancy', width: 18 },
+  ];
+
+  worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+  worksheet.getRow(1).fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FF1E293B' },
+  };
+
+  for (const m of report.months) {
+    worksheet.addRow({
+      month: m.month,
+      billed: (m.billedTotal / 100).toFixed(2),
+      revenue: (m.revenue / 100).toFixed(2),
+      expenses: (m.expenses / 100).toFixed(2),
+      profit: (m.netProfit / 100).toFixed(2),
+      occupancy: `${m.occupancyRate}%`,
+    });
+  }
+
+  // Summary Row
+  const sumRow = worksheet.addRow({
+    month: 'ANNUAL TOTAL',
+    billed: '',
+    revenue: (report.annualRevenue / 100).toFixed(2),
+    expenses: (report.annualExpenses / 100).toFixed(2),
+    profit: (report.annualNetProfit / 100).toFixed(2),
+    occupancy: '',
+  });
+  sumRow.font = { bold: true };
+
+  return await workbook.xlsx.writeBuffer();
+}
