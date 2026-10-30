@@ -10,25 +10,40 @@ export class BakongService {
    * @returns {Promise<any|null>}
    */
   async checkTransactionByMd5(md5) {
-    const baseUrl = process.env.BAKONG_BASE_URL || 'https://bakong-developer.nbc.gov.kh';
-    const token = process.env.BAKONG_TOKEN || settingsRepository.get('bakong_token', '');
+    const rawUrl =
+      process.env.BAKONG_BASE_URL ||
+      process.env.BAKONG_API_URL ||
+      settingsRepository.get('bakong_base_url') ||
+      'https://api-bakong.nbc.gov.kh';
 
-    if (!token) {
+    const baseUrl = rawUrl.replace(/\/v1\/?$/, '').replace(/\/+$/, '');
+    const rawToken =
+      process.env.BAKONG_TOKEN ||
+      settingsRepository.get('bakong_token') ||
+      '';
+
+    if (!rawToken || !rawToken.trim()) {
       // Quietly skip if no token configured
       return null;
     }
+
+    const token = rawToken.trim().startsWith('Bearer ')
+      ? rawToken.trim()
+      : `Bearer ${rawToken.trim()}`;
 
     try {
       const res = await fetch(`${baseUrl}/v1/check_transaction_by_md5`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: token,
         },
         body: JSON.stringify({ md5 }),
       });
 
-      if (!res.ok) return null;
+      if (!res.ok) {
+        return null;
+      }
       const data = await res.json();
       return data;
     } catch {

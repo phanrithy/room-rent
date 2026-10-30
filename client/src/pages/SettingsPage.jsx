@@ -68,6 +68,8 @@ export function SettingsPage() {
   const [bakongAccountId, setBakongAccountId] = useState('landlord@devb');
   const [merchantName, setMerchantName] = useState('Sunrise Apartments');
   const [merchantCity, setMerchantCity] = useState('Phnom Penh');
+  const [bakongToken, setBakongToken] = useState('');
+  const [checkingBakong, setCheckingBakong] = useState(false);
 
   // 5. Reminders & Currency
   const [reminderDaysBefore, setReminderDaysBefore] = useState('3');
@@ -130,6 +132,7 @@ export function SettingsPage() {
       setBakongAccountId(s.bakong_account_id || 'landlord@devb');
       setMerchantName(s.merchant_name || 'Sunrise Apartments');
       setMerchantCity(s.merchant_city || 'Phnom Penh');
+      setBakongToken(s.bakong_token || '');
       setReminderDaysBefore(s.reminder_days_before || '3');
       setExchangeRate(s.exchange_rate || '4100');
       setTelegramBotToken(s.telegram_bot_token || '');
@@ -286,6 +289,7 @@ export function SettingsPage() {
         bakong_account_id: bakongAccountId.trim(),
         merchant_name: merchantName.trim(),
         merchant_city: merchantCity.trim(),
+        bakong_token: bakongToken.trim(),
         reminder_days_before: String(reminderDaysBefore),
         exchange_rate: String(exchangeRate),
         telegram_bot_token: telegramBotToken.trim(),
@@ -336,6 +340,20 @@ export function SettingsPage() {
       showError(err.message || 'Telegram test failed. Make sure you pressed START on your bot.');
     } finally {
       setTestingTelegram(false);
+    }
+  };
+
+  const handleCheckBakong = async () => {
+    setCheckingBakong(true);
+    try {
+      const res = await apiRequest('khqr/check', { method: 'POST' });
+      showSuccess(
+        `Bakong check completed: ${res.checked} unpaid invoices queried, ${res.paidCount} payments reconciled!`
+      );
+    } catch (err) {
+      showError(err.message || 'Bakong check failed');
+    } finally {
+      setCheckingBakong(false);
     }
   };
 
@@ -433,29 +451,66 @@ export function SettingsPage() {
       {/* 4. Bakong KHQR Settings */}
       <Card
         title={t('settings.khqr')}
-        subtitle="National Bank of Cambodia KHQR dynamic payment settings"
+        subtitle="National Bank of Cambodia KHQR dynamic payment and auto-reconciliation settings"
+        action={
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            icon={QrCode}
+            loading={checkingBakong}
+            onClick={handleCheckBakong}
+          >
+            {i18n.language === 'km' ? 'ផ្ទៀងផ្ទាត់ការទូទាត់ Bakong' : 'Check Bakong Payments'}
+          </Button>
+        }
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Input
-            label="Bakong Account ID"
-            value={bakongAccountId}
-            onChange={(e) => setBakongAccountId(e.target.value)}
-            placeholder="e.g. landlord@devb"
-            required
-            helperText="Your official Bakong merchant or individual ID"
-          />
-          <Input
-            label="Merchant Name"
-            value={merchantName}
-            onChange={(e) => setMerchantName(e.target.value)}
-            required
-          />
-          <Input
-            label="Merchant City"
-            value={merchantCity}
-            onChange={(e) => setMerchantCity(e.target.value)}
-            required
-          />
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Input
+              label="Bakong Account ID"
+              value={bakongAccountId}
+              onChange={(e) => setBakongAccountId(e.target.value)}
+              placeholder="e.g. yourname@aba or landlord@devb"
+              required
+              helperText="Your Bakong ID or phone@bank (e.g. 012345678@aba)"
+            />
+            <Input
+              label="Merchant / Landlord Name"
+              value={merchantName}
+              onChange={(e) => setMerchantName(e.target.value)}
+              required
+              helperText="Name shown on banking app screen when tenant scans"
+            />
+            <Input
+              label="Merchant City"
+              value={merchantCity}
+              onChange={(e) => setMerchantCity(e.target.value)}
+              required
+              helperText="e.g. Phnom Penh"
+            />
+          </div>
+
+          <div className="pt-2 border-t border-border">
+            <Input
+              label="Bakong Open API Token (JWT Token for Level 2 Auto-Reconciliation)"
+              type="password"
+              value={bakongToken}
+              onChange={(e) => setBakongToken(e.target.value)}
+              placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+              helperText="Enables the system to automatically check unpaid invoices and mark them paid when tenants transfer via KHQR."
+            />
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-surface-subtle border border-border text-xs text-content-secondary space-y-1.5">
+            <div className="font-semibold text-content-primary">
+              💡 How Bakong KHQR Works in Your Building:
+            </div>
+            <ul className="list-disc list-inside space-y-1 text-[11px] text-content-muted">
+              <li><b>Level 1 (KHQR Generation):</b> Every invoice automatically gets a dynamic Bakong KHQR with the exact bill amount and room info. Tenants can scan from their phone screen or printed invoice with ABA, Acleda, Canadia, Wing, or Bakong.</li>
+              <li><b>Level 2 (Auto-Reconciliation with your Token):</b> The system runs a background job that checks transaction MD5 hashes with the Bakong NBC server and automatically marks invoices as PAID without you having to manually record payments!</li>
+            </ul>
+          </div>
         </div>
       </Card>
 

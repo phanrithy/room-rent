@@ -11,11 +11,58 @@ describe('Phase 6: Money Tracking, Expenses, Reports, CSV Import', () => {
   let staffToken;
   let createdExpenseId;
 
+  const cleanupTestData = (db) => {
+    const tIds = db.prepare("SELECT id FROM tenants WHERE name IN ('Kosal Heng', 'Sreymom Pich')").all().map((t) => t.id);
+    for (const tid of tIds) {
+      const cIds = db.prepare("SELECT id FROM contracts WHERE tenant_id = ?").all(tid).map((c) => c.id);
+      for (const cid of cIds) {
+        const invIds = db.prepare("SELECT id FROM invoices WHERE contract_id = ?").all(cid).map((i) => i.id);
+        for (const invId of invIds) {
+          db.prepare("DELETE FROM notifications WHERE invoice_id = ?").run(invId);
+          db.prepare("DELETE FROM payments WHERE invoice_id = ?").run(invId);
+          db.prepare("DELETE FROM invoice_items WHERE invoice_id = ?").run(invId);
+          db.prepare("DELETE FROM invoices WHERE id = ?").run(invId);
+        }
+        db.prepare("DELETE FROM documents WHERE contract_id = ?").run(cid);
+        db.prepare("DELETE FROM contracts WHERE id = ?").run(cid);
+      }
+      db.prepare("DELETE FROM documents WHERE tenant_id = ?").run(tid);
+      db.prepare("DELETE FROM users WHERE tenant_id = ?").run(tid);
+      db.prepare("DELETE FROM room_applications WHERE tenant_id = ?").run(tid);
+      db.prepare("DELETE FROM tenants WHERE id = ?").run(tid);
+    }
+
+    const rIds = db.prepare("SELECT id FROM rooms WHERE room_number IN ('901', '902')").all().map((r) => r.id);
+    for (const rid of rIds) {
+      db.prepare("DELETE FROM maintenance_requests WHERE room_id = ?").run(rid);
+      db.prepare("DELETE FROM meter_readings WHERE room_id = ?").run(rid);
+      const cIds = db.prepare("SELECT id FROM contracts WHERE room_id = ?").all(rid).map((c) => c.id);
+      for (const cid of cIds) {
+        const invIds = db.prepare("SELECT id FROM invoices WHERE contract_id = ?").all(cid).map((i) => i.id);
+        for (const invId of invIds) {
+          db.prepare("DELETE FROM notifications WHERE invoice_id = ?").run(invId);
+          db.prepare("DELETE FROM payments WHERE invoice_id = ?").run(invId);
+          db.prepare("DELETE FROM invoice_items WHERE invoice_id = ?").run(invId);
+          db.prepare("DELETE FROM invoices WHERE id = ?").run(invId);
+        }
+        db.prepare("DELETE FROM documents WHERE contract_id = ?").run(cid);
+        db.prepare("DELETE FROM contracts WHERE id = ?").run(cid);
+      }
+      db.prepare("DELETE FROM room_applications WHERE room_id = ?").run(rid);
+      db.prepare("DELETE FROM expenses WHERE room_id = ?").run(rid);
+      db.prepare("DELETE FROM rooms WHERE id = ?").run(rid);
+    }
+  };
+
   before(async () => {
     const db = (await import('../src/db/connection.js')).getDb();
-    db.prepare("DELETE FROM rooms WHERE room_number IN ('901', '902')").run();
-    db.prepare("DELETE FROM tenants WHERE name IN ('Kosal Heng', 'Sreymom Pich')").run();
-    await seedDatabase({ demo: true });
+    try {
+      cleanupTestData(db);
+      await seedDatabase({ demo: true });
+    } catch (err) {
+      console.error('*** ERROR IN PHASE 6 BEFORE HOOK ***:', err);
+      throw err;
+    }
     const app = createApp();
     await new Promise((resolve) => {
       server = app.listen(0, () => {
@@ -39,7 +86,13 @@ describe('Phase 6: Money Tracking, Expenses, Reports, CSV Import', () => {
     staffToken = (await resStaff.json()).token;
   });
 
-  after(() => {
+  after(async () => {
+    try {
+      const db = (await import('../src/db/connection.js')).getDb();
+      cleanupTestData(db);
+    } catch {
+      // quiet cleanup
+    }
     server.close();
     closeDb();
   });

@@ -16,12 +16,15 @@ export function getSettings(req, res, next) {
     const settings = settingsService.getSettings();
     const property = propertyRepository.findFirst();
 
-    // Include env fallbacks for Telegram if not stored in settings table
+    // Include env fallbacks for Telegram and Bakong if not stored in settings table
     if (!settings.telegram_bot_token && process.env.TELEGRAM_BOT_TOKEN) {
       settings.telegram_bot_token = process.env.TELEGRAM_BOT_TOKEN;
     }
     if (!settings.admin_telegram_chat_id && process.env.ADMIN_TELEGRAM_CHAT_ID) {
       settings.admin_telegram_chat_id = process.env.ADMIN_TELEGRAM_CHAT_ID;
+    }
+    if (!settings.bakong_token && process.env.BAKONG_TOKEN) {
+      settings.bakong_token = process.env.BAKONG_TOKEN;
     }
 
     res.json({ settings, property });
