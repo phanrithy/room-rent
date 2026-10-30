@@ -26,6 +26,15 @@ export function getSettings(req, res, next) {
     if (!settings.bakong_token && process.env.BAKONG_TOKEN) {
       settings.bakong_token = process.env.BAKONG_TOKEN;
     }
+    if ((!settings.bakong_account_id || settings.bakong_account_id === 'landlord@devb') && process.env.BAKONG_ACCOUNT_ID) {
+      settings.bakong_account_id = process.env.BAKONG_ACCOUNT_ID;
+    }
+    if ((!settings.merchant_name || settings.merchant_name === 'Sunrise Apartments') && process.env.MERCHANT_NAME) {
+      settings.merchant_name = process.env.MERCHANT_NAME;
+    }
+    if ((!settings.merchant_city || settings.merchant_city === 'Phnom Penh') && process.env.MERCHANT_CITY) {
+      settings.merchant_city = process.env.MERCHANT_CITY;
+    }
 
     res.json({ settings, property });
   } catch (err) {

@@ -119,6 +119,28 @@ export function SettingsPage() {
     }
   }, []);
 
+  const fetchKhqrPreview = useCallback(async (accountId, mName, mCity) => {
+    setLoadingPreview(true);
+    try {
+      const res = await apiRequest('khqr/preview', {
+        method: 'POST',
+        body: JSON.stringify({
+          bakongAccountId: (accountId || 'landlord@devb').trim(),
+          merchantName: (mName || 'Sunrise Apartments').trim(),
+          merchantCity: (mCity || 'Phnom Penh').trim(),
+          amountDollars: 1.0,
+        }),
+      });
+      if (res && res.qr) {
+        setPreviewQr(res.qr);
+      }
+    } catch {
+      // quiet fallback
+    } finally {
+      setLoadingPreview(false);
+    }
+  }, []);
+
   const fetchSettings = useCallback(async () => {
     setLoading(true);
     try {
@@ -352,28 +374,6 @@ export function SettingsPage() {
     }
   };
 
-  const fetchKhqrPreview = useCallback(async (accountId, mName, mCity) => {
-    setLoadingPreview(true);
-    try {
-      const res = await apiRequest('khqr/preview', {
-        method: 'POST',
-        body: JSON.stringify({
-          bakongAccountId: (accountId || bakongAccountId).trim(),
-          merchantName: (mName || merchantName).trim(),
-          merchantCity: (mCity || merchantCity).trim(),
-          amountDollars: 1.0,
-        }),
-      });
-      if (res && res.qr) {
-        setPreviewQr(res.qr);
-      }
-    } catch {
-      // quiet fallback
-    } finally {
-      setLoadingPreview(false);
-    }
-  }, [bakongAccountId, merchantName, merchantCity]);
-
   const handleCheckBakong = async () => {
     setCheckingBakong(true);
     try {
@@ -524,6 +524,7 @@ export function SettingsPage() {
                   {i18n.language === 'km' ? 'ជ្រើសរើសធនាគារ:' : 'Select Bank:'}
                 </span>
                 {[
+                  { label: '@bkrt (Bakong Retail)', tag: '@bkrt' },
                   { label: '@aba (ABA Bank)', tag: '@aba' },
                   { label: '@aclb (ACLEDA)', tag: '@aclb' },
                   { label: '@bakong (Bakong App)', tag: '@bakong' },
