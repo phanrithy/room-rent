@@ -21,6 +21,8 @@ import {
   Download,
   Upload,
   Lock,
+  Send,
+  ExternalLink,
 } from 'lucide-react';
 
 import { PageHeader } from '../components/common/PageHeader.jsx';
@@ -70,6 +72,11 @@ export function SettingsPage() {
   // 5. Reminders & Currency
   const [reminderDaysBefore, setReminderDaysBefore] = useState('3');
   const [exchangeRate, setExchangeRate] = useState('4100');
+
+  // Telegram Notifications
+  const [telegramBotToken, setTelegramBotToken] = useState('');
+  const [adminTelegramChatId, setAdminTelegramChatId] = useState('');
+  const [testingTelegram, setTestingTelegram] = useState(false);
 
   // 6. User Preferences
   const [preferredLang, setPreferredLang] = useState(i18n.language || 'en');
@@ -125,6 +132,8 @@ export function SettingsPage() {
       setMerchantCity(s.merchant_city || 'Phnom Penh');
       setReminderDaysBefore(s.reminder_days_before || '3');
       setExchangeRate(s.exchange_rate || '4100');
+      setTelegramBotToken(s.telegram_bot_token || '');
+      setAdminTelegramChatId(s.admin_telegram_chat_id || '');
 
       fetchPropertiesAndUsers();
     } catch (err) {
@@ -279,6 +288,8 @@ export function SettingsPage() {
         merchant_city: merchantCity.trim(),
         reminder_days_before: String(reminderDaysBefore),
         exchange_rate: String(exchangeRate),
+        telegram_bot_token: telegramBotToken.trim(),
+        admin_telegram_chat_id: adminTelegramChatId.trim(),
       };
 
       await apiRequest('settings', {
@@ -299,6 +310,32 @@ export function SettingsPage() {
       showError(err.message || 'Failed to save settings');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleTestTelegram = async () => {
+    if (!telegramBotToken.trim()) {
+      showError('Please enter your Telegram Bot Token');
+      return;
+    }
+    if (!adminTelegramChatId.trim()) {
+      showError('Please enter your Admin Telegram Chat ID');
+      return;
+    }
+    setTestingTelegram(true);
+    try {
+      const res = await apiRequest('settings/test-telegram', {
+        method: 'POST',
+        body: JSON.stringify({
+          botToken: telegramBotToken.trim(),
+          chatId: adminTelegramChatId.trim(),
+        }),
+      });
+      showSuccess(res.message || 'Test message sent to Telegram! Check your phone.');
+    } catch (err) {
+      showError(err.message || 'Telegram test failed. Make sure you pressed START on your bot.');
+    } finally {
+      setTestingTelegram(false);
     }
   };
 
@@ -444,6 +481,102 @@ export function SettingsPage() {
             onChange={(e) => setExchangeRate(e.target.value)}
             helperText="For display conversion on invoices (e.g. 4,100 KHR per USD)"
           />
+        </div>
+      </Card>
+
+      {/* Telegram Bot & Real-time Alerts */}
+      <Card
+        title={
+          <div className="flex items-center gap-2">
+            <Send className="w-5 h-5 text-[#229ED9]" />
+            <span>{i18n.language === 'km' ? 'ការកំណត់ Telegram Bot' : 'Telegram Bot Notifications'}</span>
+          </div>
+        }
+        subtitle={
+          i18n.language === 'km'
+            ? 'ទទួលការជូនដំណឹងភ្លាមៗនៅពេលមានអ្នកជួលដាក់ពាក្យតាម QR និងផ្ញើព័ត៌មានគណនីទៅអ្នកជួល'
+            : 'Receive instant alerts when tenants apply via door QR, and dispatch login credentials to tenants'
+        }
+        action={
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            icon={Send}
+            loading={testingTelegram}
+            onClick={handleTestTelegram}
+          >
+            {i18n.language === 'km' ? 'ផ្ញើសារសាកល្បងទៅ Telegram' : 'Send Test Message'}
+          </Button>
+        }
+      >
+        <div className="space-y-4 pt-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Input
+                label={
+                  <div className="flex items-center justify-between">
+                    <span>Telegram Bot Token</span>
+                    <a
+                      href="https://t.me/BotFather"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-primary hover:underline font-normal inline-flex items-center gap-0.5"
+                    >
+                      Get from @BotFather <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                }
+                value={telegramBotToken}
+                onChange={(e) => setTelegramBotToken(e.target.value)}
+                placeholder="e.g. 7123456789:AAH..."
+              />
+              <span className="text-[11px] text-content-muted mt-1 block">
+                Created via @BotFather in Telegram.
+              </span>
+            </div>
+
+            <div>
+              <Input
+                label={
+                  <div className="flex items-center justify-between">
+                    <span>Admin Telegram Chat ID</span>
+                    <a
+                      href="https://t.me/userinfobot"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-primary hover:underline font-normal inline-flex items-center gap-0.5"
+                    >
+                      Get from @userinfobot <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                }
+                value={adminTelegramChatId}
+                onChange={(e) => setAdminTelegramChatId(e.target.value)}
+                placeholder="e.g. 123456789"
+              />
+              <span className="text-[11px] text-content-muted mt-1 block">
+                Your personal Telegram numerical ID where tenant alerts will be sent.
+              </span>
+            </div>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-content-secondary space-y-2">
+            <span className="font-bold text-content-primary block">
+              {i18n.language === 'km' ? 'របៀបភ្ជាប់ជាមួយ Telegram ពិតប្រាកដក្នុង ៣ ជំហាន៖' : 'How to connect real Telegram in 3 easy steps:'}
+            </span>
+            <ol className="list-decimal list-inside space-y-1.5 text-content-secondary text-[11px]">
+              <li>
+                Open Telegram &rarr; Search for <b>@BotFather</b> &rarr; Send <code>/newbot</code> &rarr; Give it a name & username &rarr; Copy the <b>HTTP API Token</b> into the field above.
+              </li>
+              <li>
+                Search for <b>@userinfobot</b> in Telegram &rarr; Send any text &rarr; Copy your numerical <b>Id</b> into the Admin Chat ID field.
+              </li>
+              <li>
+                <b>Important:</b> Open your newly created bot in Telegram and click <b>START</b> so the bot has permission to send you messages!
+              </li>
+            </ol>
+          </div>
         </div>
       </Card>
 

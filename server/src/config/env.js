@@ -21,4 +21,5 @@ export const env = {
   MERCHANT_NAME: process.env.MERCHANT_NAME || 'Sunrise Apartments',
   MERCHANT_CITY: process.env.MERCHANT_CITY || 'Phnom Penh',
   TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || '',
+  ADMIN_TELEGRAM_CHAT_ID: process.env.ADMIN_TELEGRAM_CHAT_ID || '',
 };

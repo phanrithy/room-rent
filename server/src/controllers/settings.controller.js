@@ -7,13 +7,56 @@ import { userRepository } from '../repositories/user.repository.js';
 import { auditRepository } from '../repositories/audit.repository.js';
 import { seedDatabase } from '../db/seed.js';
 import { getDb, closeDb } from '../db/connection.js';
-import { NotFoundError, ValidationError } from '../utils/errors.js';
+import { settingsRepository } from '../repositories/settings.repository.js';
+import { telegramService } from '../services/telegram.service.js';
+import { NotFoundError, ValidationError, BadRequestError } from '../utils/errors.js';
 
 export function getSettings(req, res, next) {
   try {
     const settings = settingsService.getSettings();
     const property = propertyRepository.findFirst();
+
+    // Include env fallbacks for Telegram if not stored in settings table
+    if (!settings.telegram_bot_token && process.env.TELEGRAM_BOT_TOKEN) {
+      settings.telegram_bot_token = process.env.TELEGRAM_BOT_TOKEN;
+    }
+    if (!settings.admin_telegram_chat_id && process.env.ADMIN_TELEGRAM_CHAT_ID) {
+      settings.admin_telegram_chat_id = process.env.ADMIN_TELEGRAM_CHAT_ID;
+    }
+
     res.json({ settings, property });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function testTelegram(req, res, next) {
+  try {
+    const { botToken, chatId } = req.body || {};
+    const token =
+      botToken ||
+      settingsRepository.get('telegram_bot_token') ||
+      process.env.TELEGRAM_BOT_TOKEN;
+    const targetChat =
+      chatId ||
+      settingsRepository.get('admin_telegram_chat_id') ||
+      process.env.ADMIN_TELEGRAM_CHAT_ID;
+
+    if (!token) {
+      throw new BadRequestError('Telegram Bot Token is missing. Please configure TELEGRAM_BOT_TOKEN', 'BOT_TOKEN_MISSING');
+    }
+    if (!targetChat) {
+      throw new BadRequestError('Admin Telegram Chat ID is missing. Please configure ADMIN_TELEGRAM_CHAT_ID', 'CHAT_ID_MISSING');
+    }
+
+    const testMsg = `🔔 <b>Test from Sunrise Apartments!</b>\n━━━━━━━━━━━━━━━━━━━━\nYour Telegram Bot is successfully connected and ready to send notifications.\nTimestamp: ${new Date().toISOString()}`;
+
+    const result = await telegramService.sendMessage(targetChat, testMsg);
+    if (!result.success) {
+      throw new BadRequestError(result.error || 'Failed to deliver message via Telegram', 'TELEGRAM_FAILED');
+    }
+
+    res.json({ success: true, message: 'Test message delivered to Telegram!' });
   } catch (err) {
     next(err);
   }

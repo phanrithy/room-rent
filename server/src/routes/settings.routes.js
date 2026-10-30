@@ -10,6 +10,7 @@ router.use(authenticateToken);
 router.get('/', requireRole('admin'), settingsController.getSettings);
 router.patch('/', requireRole('admin'), settingsController.updateSettings);
 router.post('/onboarding', requireRole('admin'), settingsController.runOnboarding);
+router.post('/test-telegram', requireRole('admin'), settingsController.testTelegram);
 
 // Backup & Restore (Admin only)
 router.get('/backup', requireRole('admin'), settingsController.downloadBackup);
