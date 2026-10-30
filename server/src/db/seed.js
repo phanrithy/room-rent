@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import { getDb } from './connection.js';
 import { runMigrations } from './migrator.js';
+import { generateInvoiceKhqr } from '../utils/khqr.js';
 
 export async function seedDatabase(options = { demo: true, clean: false }) {
   const db = getDb();
@@ -167,8 +168,8 @@ export async function seedDatabase(options = { demo: true, clean: false }) {
         `);
 
         const insertInvoice = db.prepare(`
-          INSERT INTO invoices (contract_id, month, rent, electric_cost, water_cost, other_charges, late_fee, total, paid_amount, status, due_date)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO invoices (contract_id, month, rent, electric_cost, water_cost, other_charges, late_fee, total, paid_amount, status, due_date, khqr_string, khqr_md5)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
 
         const insertPayment = db.prepare(`
@@ -190,7 +191,7 @@ export async function seedDatabase(options = { demo: true, clean: false }) {
           const total = c.rent + eCost + wCost;
 
           const invId = insertInvoice.run(
-            c.id, '2026-08', c.rent, eCost, wCost, 0, 0, total, total, 'paid', '2026-09-05'
+            c.id, '2026-08', c.rent, eCost, wCost, 0, 0, total, total, 'paid', '2026-09-05', null, null
           ).lastInsertRowid;
 
           insertPayment.run(invId, total, i % 2 === 0 ? 'cash' : 'qr', '2026-08-28', 'Paid on time');
@@ -215,8 +216,23 @@ export async function seedDatabase(options = { demo: true, clean: false }) {
           if (st === 'paid') paidAmt = total;
           else if (st === 'partial') paidAmt = Math.floor(total / 2);
 
+          const balance = total - paidAmt;
+          let qrString = null;
+          let md5Hash = null;
+          if (balance > 0) {
+            const khqr = generateInvoiceKhqr({
+              bakongAccountId: 'landlord@devb',
+              merchantName: 'Sunrise Apartments',
+              merchantCity: 'Phnom Penh',
+              amountDollars: balance / 100,
+              billNumber: `INV-202609-${c.room.roomNumber}`,
+            });
+            qrString = khqr.qr;
+            md5Hash = khqr.md5;
+          }
+
           const invId = insertInvoice.run(
-            c.id, '2026-09', c.rent, eCost, wCost, 0, 0, total, paidAmt, st, '2026-10-05'
+            c.id, '2026-09', c.rent, eCost, wCost, 0, 0, total, paidAmt, st, '2026-10-05', qrString, md5Hash
           ).lastInsertRowid;
 
           if (paidAmt > 0) {

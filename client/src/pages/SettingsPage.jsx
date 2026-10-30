@@ -35,6 +35,7 @@ import { Modal } from '../components/common/Modal.jsx';
 import { ConfirmDialog } from '../components/common/ConfirmDialog.jsx';
 import { Skeleton } from '../components/common/Skeleton.jsx';
 import { OnboardingWizardModal } from '../components/onboarding/OnboardingWizardModal.jsx';
+import { QrCard } from '../components/common/QrCard.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -70,6 +71,8 @@ export function SettingsPage() {
   const [merchantCity, setMerchantCity] = useState('Phnom Penh');
   const [bakongToken, setBakongToken] = useState('');
   const [checkingBakong, setCheckingBakong] = useState(false);
+  const [previewQr, setPreviewQr] = useState(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
 
   // 5. Reminders & Currency
   const [reminderDaysBefore, setReminderDaysBefore] = useState('3');
@@ -139,12 +142,17 @@ export function SettingsPage() {
       setAdminTelegramChatId(s.admin_telegram_chat_id || '');
 
       fetchPropertiesAndUsers();
+      fetchKhqrPreview(
+        s.bakong_account_id || 'landlord@devb',
+        s.merchant_name || 'Sunrise Apartments',
+        s.merchant_city || 'Phnom Penh'
+      );
     } catch (err) {
       showError(err.message || 'Failed to load settings');
     } finally {
       setLoading(false);
     }
-  }, [fetchPropertiesAndUsers, showError]);
+  }, [fetchPropertiesAndUsers, fetchKhqrPreview, showError]);
 
   const handleCreateProperty = async (e) => {
     e.preventDefault();
@@ -310,6 +318,7 @@ export function SettingsPage() {
       }
 
       showSuccess(t('common.saved'));
+      fetchKhqrPreview(bakongAccountId, merchantName, merchantCity);
     } catch (err) {
       showError(err.message || 'Failed to save settings');
     } finally {
@@ -342,6 +351,28 @@ export function SettingsPage() {
       setTestingTelegram(false);
     }
   };
+
+  const fetchKhqrPreview = useCallback(async (accountId, mName, mCity) => {
+    setLoadingPreview(true);
+    try {
+      const res = await apiRequest('khqr/preview', {
+        method: 'POST',
+        body: JSON.stringify({
+          bakongAccountId: (accountId || bakongAccountId).trim(),
+          merchantName: (mName || merchantName).trim(),
+          merchantCity: (mCity || merchantCity).trim(),
+          amountDollars: 1.0,
+        }),
+      });
+      if (res && res.qr) {
+        setPreviewQr(res.qr);
+      }
+    } catch {
+      // quiet fallback
+    } finally {
+      setLoadingPreview(false);
+    }
+  }, [bakongAccountId, merchantName, merchantCity]);
 
   const handleCheckBakong = async () => {
     setCheckingBakong(true);
@@ -453,28 +484,74 @@ export function SettingsPage() {
         title={t('settings.khqr')}
         subtitle="National Bank of Cambodia KHQR dynamic payment and auto-reconciliation settings"
         action={
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            icon={QrCode}
-            loading={checkingBakong}
-            onClick={handleCheckBakong}
-          >
-            {i18n.language === 'km' ? 'ផ្ទៀងផ្ទាត់ការទូទាត់ Bakong' : 'Check Bakong Payments'}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              icon={QrCode}
+              loading={loadingPreview}
+              onClick={() => fetchKhqrPreview(bakongAccountId, merchantName, merchantCity)}
+            >
+              {i18n.language === 'km' ? 'បង្ហាញ QR សាកល្បង' : 'Preview Test QR'}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              icon={CheckCircle2}
+              loading={checkingBakong}
+              onClick={handleCheckBakong}
+            >
+              {i18n.language === 'km' ? 'ផ្ទៀងផ្ទាត់ការទូទាត់ Bakong' : 'Check Bakong Payments'}
+            </Button>
+          </div>
         }
       >
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Input
-              label="Bakong Account ID"
-              value={bakongAccountId}
-              onChange={(e) => setBakongAccountId(e.target.value)}
-              placeholder="e.g. yourname@aba or landlord@devb"
-              required
-              helperText="Your Bakong ID or phone@bank (e.g. 012345678@aba)"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+            <div>
+              <Input
+                label="Bakong Account ID"
+                value={bakongAccountId}
+                onChange={(e) => setBakongAccountId(e.target.value)}
+                placeholder="e.g. 081816685@aba or landlord@devb"
+                required
+                helperText="Account with bank suffix (e.g. 081816685@aba)"
+              />
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                <span className="text-[10px] text-content-muted font-medium">
+                  {i18n.language === 'km' ? 'ជ្រើសរើសធនាគារ:' : 'Select Bank:'}
+                </span>
+                {[
+                  { label: '@aba (ABA Bank)', tag: '@aba' },
+                  { label: '@aclb (ACLEDA)', tag: '@aclb' },
+                  { label: '@bakong (Bakong App)', tag: '@bakong' },
+                  { label: '@wing (Wing)', tag: '@wing' },
+                  { label: '@cadi (Canadia)', tag: '@cadi' },
+                ].map((b) => (
+                  <button
+                    key={b.tag}
+                    type="button"
+                    onClick={() => {
+                      const raw = bakongAccountId.trim();
+                      const cleanBase = raw.includes('@') ? raw.split('@')[0] : raw;
+                      const nextId = `${cleanBase || '081816685'}${b.tag}`;
+                      setBakongAccountId(nextId);
+                      fetchKhqrPreview(nextId, merchantName, merchantCity);
+                    }}
+                    className={`px-2 py-0.5 rounded text-[10px] font-mono border transition-all ${
+                      bakongAccountId.endsWith(b.tag)
+                        ? 'bg-primary text-white border-primary font-bold shadow-xs'
+                        : 'bg-surface-subtle hover:bg-surface text-content-secondary border-border'
+                    }`}
+                  >
+                    {b.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <Input
               label="Merchant / Landlord Name"
               value={merchantName}
@@ -501,6 +578,37 @@ export function SettingsPage() {
               helperText="Enables the system to automatically check unpaid invoices and mark them paid when tenants transfer via KHQR."
             />
           </div>
+
+          {/* Live KHQR Preview Box */}
+          {previewQr && (
+            <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 flex flex-col sm:flex-row items-center gap-6">
+              <div className="w-full max-w-[220px]">
+                <QrCard
+                  qrString={previewQr}
+                  amountCents={100}
+                  billNumber="TEST-001"
+                  merchantName={merchantName || 'Sunrise Apartments'}
+                  exchangeRate={parseInt(exchangeRate, 10) || 4100}
+                />
+              </div>
+              <div className="flex-1 text-xs space-y-2 text-content-secondary">
+                <div className="font-bold text-sm text-content-primary flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-success" />
+                  <span>{i18n.language === 'km' ? 'កូដ Bakong KHQR ពិតប្រាកដរបស់អ្នក' : 'Your Live Bakong KHQR Code'}</span>
+                </div>
+                <p className="text-[11px] text-content-muted leading-relaxed">
+                  {i18n.language === 'km'
+                    ? 'នេះជាកូដ KHQR ពិតប្រាកដដែលបានបង្កើតតាមស្ដង់ដារផ្លូវការរបស់ធនាគារជាតិនៃកម្ពុជា (NBC)។ អ្នកអាចយកទូរស័ព្ទមកស្កេនដោយផ្ទាល់ជាមួយកម្មវិធី ABA Mobile, Bakong, ឬធនាគារផ្សេងទៀត ដើម្បីសាកល្បងផ្ទៀងផ្ទាត់ឈ្មោះគណនីរបស់អ្នក។'
+                    : 'This is your genuine Bakong KHQR generated according to National Bank of Cambodia (NBC) specifications. You can test-scan it right now with ABA Mobile, Bakong, or any Cambodian bank app to verify your receiving account and merchant name.'}
+                </p>
+                <div className="p-2.5 rounded-lg bg-surface border border-border text-[11px] font-mono space-y-0.5">
+                  <div><b>Receiving Account:</b> {bakongAccountId.includes('@') ? bakongAccountId : `${bakongAccountId}@aba`}</div>
+                  <div><b>Merchant Name:</b> {merchantName}</div>
+                  <div><b>Test Bill:</b> $1.00 (4,100 KHR)</div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="p-3.5 rounded-xl bg-surface-subtle border border-border text-xs text-content-secondary space-y-1.5">
             <div className="font-semibold text-content-primary">

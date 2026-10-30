@@ -8,5 +8,6 @@ router.use(authenticateToken);
 // Trigger Bakong check (Admin & Staff)
 router.post('/check', requireRole('admin', 'staff'), khqrController.checkBakongTransactions);
 router.post('/reminders', requireRole('admin', 'staff'), khqrController.runReminders);
+router.post('/preview', requireRole('admin', 'staff'), khqrController.previewKhqr);
 
 export default router;

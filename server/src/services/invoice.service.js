@@ -98,7 +98,73 @@ export class InvoiceService {
     if (currentUser.role === 'tenant' && invoice.tenantId !== currentUser.tenantId) {
       throw new ForbiddenError('You can only view your own invoice', 'PERMISSION_DENIED');
     }
+
+    const balance = invoice.total - invoice.paidAmount;
+    if (balance > 0 && !invoice.khqrString) {
+      const bakongAccountId = settingsRepository.get('bakong_account_id', 'landlord@devb');
+      const merchantName = settingsRepository.get('merchant_name', 'Sunrise Apartments');
+      const merchantCity = settingsRepository.get('merchant_city', 'Phnom Penh');
+      const billNumber = `INV-${invoice.month.replace('-', '')}-${invoice.roomNumber}`;
+
+      const khqr = generateInvoiceKhqr({
+        bakongAccountId,
+        merchantName,
+        merchantCity,
+        amountDollars: balance / 100,
+        billNumber,
+      });
+
+      if (khqr.qr) {
+        invoiceRepository.updateInvoice(invoice.id, {
+          khqrString: khqr.qr,
+          khqrMd5: khqr.md5,
+        });
+        invoice.khqrString = khqr.qr;
+        invoice.khqrMd5 = khqr.md5;
+      }
+    }
+
     return invoice;
+  }
+
+  /**
+   * Regenerate dynamic KHQR for all unpaid or partial invoices
+   */
+  regenerateUnpaidKhqr() {
+    const db = getDb();
+    const bakongAccountId = settingsRepository.get('bakong_account_id', 'landlord@devb');
+    const merchantName = settingsRepository.get('merchant_name', 'Sunrise Apartments');
+    const merchantCity = settingsRepository.get('merchant_city', 'Phnom Penh');
+
+    const unpaidInvoices = db.prepare(`
+      SELECT i.*, r.room_number 
+      FROM invoices i
+      JOIN contracts c ON i.contract_id = c.id
+      JOIN rooms r ON c.room_id = r.id
+      WHERE i.status IN ('unpaid', 'partial', 'overdue')
+    `).all();
+
+    for (const inv of unpaidInvoices) {
+      const balance = inv.total - inv.paid_amount;
+      if (balance > 0) {
+        const billNumber = `INV-${inv.month.replace('-', '')}-${inv.room_number}`;
+        const khqr = generateInvoiceKhqr({
+          bakongAccountId,
+          merchantName,
+          merchantCity,
+          amountDollars: balance / 100,
+          billNumber,
+        });
+
+        if (khqr.qr) {
+          db.prepare('UPDATE invoices SET khqr_string = ?, khqr_md5 = ? WHERE id = ?').run(
+            khqr.qr,
+            khqr.md5,
+            inv.id
+          );
+        }
+      }
+    }
   }
 
   /**

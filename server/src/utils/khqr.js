@@ -18,6 +18,12 @@ export function generateInvoiceKhqr({
   billNumber,
 }) {
   try {
+    let cleanAccountId = String(bakongAccountId || 'landlord@devb').trim();
+    if (!cleanAccountId.includes('@')) {
+      // Landlord typed raw phone or account number like '081816685' -> default to @aba
+      cleanAccountId = `${cleanAccountId}@aba`;
+    }
+
     const formattedAmount = parseFloat(Number(amountDollars).toFixed(2));
     const optional = {
       currency: khqrData.currency.usd,
@@ -27,7 +33,7 @@ export function generateInvoiceKhqr({
     };
 
     const info = new IndividualInfo(
-      bakongAccountId || 'landlord@devb',
+      cleanAccountId,
       merchantName || 'Sunrise Apartments',
       merchantCity || 'Phnom Penh',
       optional
@@ -45,7 +51,7 @@ export function generateInvoiceKhqr({
 
     console.warn('[KHQR] Generator warning:', res?.status?.message);
     return {
-      qr: `00020101021229300016${bakongAccountId || 'landlord@devb'}5204599953038405406${formattedAmount}5802KH5918${merchantName}6010${merchantCity}62140110${billNumber}`,
+      qr: `00020101021229300016${cleanAccountId}5204599953038405406${formattedAmount}5802KH5918${merchantName}6010${merchantCity}62140110${billNumber}`,
       md5: null,
     };
   } catch (err) {

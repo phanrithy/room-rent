@@ -1,5 +1,6 @@
 import { settingsRepository } from '../repositories/settings.repository.js';
 import { auditRepository } from '../repositories/audit.repository.js';
+import { invoiceService } from './invoice.service.js';
 
 export class SettingsService {
   /**
@@ -18,6 +19,14 @@ export class SettingsService {
    */
   updateSettings(userId, updates) {
     settingsRepository.setMany(updates);
+
+    if (updates.bakong_account_id || updates.merchant_name || updates.merchant_city) {
+      try {
+        invoiceService.regenerateUnpaidKhqr();
+      } catch (err) {
+        console.warn('[Settings] Failed to regenerate unpaid KHQRs:', err);
+      }
+    }
 
     auditRepository.create({
       userId,
