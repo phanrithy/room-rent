@@ -21,7 +21,7 @@ export function getContract(req, res, next) {
 export function createContract(req, res, next) {
   try {
     const contract = contractService.createContract(req.user.id, req.body);
-    res.status(201).json({ contract });
+    res.status(201).json({ contract, tenantAccount: contract.tenantAccount });
   } catch (err) {
     next(err);
   }

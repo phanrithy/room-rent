@@ -39,15 +39,13 @@ export class PublicController {
       const { identifier } = req.params;
       let room = null;
 
-      // Try numeric ID first
-      if (!isNaN(identifier)) {
-        room = roomRepository.findById(parseInt(identifier, 10));
-      }
+      // Try searching by roomNumber first (e.g. /rooms/101)
+      const allRooms = roomRepository.findAll();
+      room = allRooms.find((r) => String(r.roomNumber) === String(identifier));
 
-      // If not found, try searching by roomNumber
-      if (!room) {
-        const allRooms = roomRepository.findAll();
-        room = allRooms.find((r) => String(r.roomNumber) === String(identifier));
+      // Fallback: numeric database ID
+      if (!room && !isNaN(identifier)) {
+        room = roomRepository.findById(parseInt(identifier, 10));
       }
 
       if (!room) {
@@ -64,6 +62,23 @@ export class PublicController {
           note: room.note,
           propertyName: room.propertyName || 'Sunrise Apartments',
         },
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * Get Telegram bot info for applicants to connect
+   */
+  async getPublicBotInfo(req, res, next) {
+    try {
+      const botInfo = await telegramService.getBotInfo();
+      res.json({
+        hasBot: !!botInfo,
+        botUsername: botInfo?.username || 'sunriserent_cambodia_bot',
+        botName: botInfo?.firstName || 'Sunrise Rent Bot',
+        botLink: botInfo?.link || 'https://t.me/sunriserent_cambodia_bot',
       });
     } catch (err) {
       next(err);

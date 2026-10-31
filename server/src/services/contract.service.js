@@ -168,7 +168,18 @@ export class ContractService {
       room,
       username: tenantAccount.username,
       tempPassword,
+      deposit: finalDeposit,
+      rent: finalRent,
     }).catch((err) => console.warn('[Telegram Dispatch Error]', err.message));
+
+    // Also alert admin Telegram channel of contract creation
+    telegramService.sendAdminContractCreatedAlert({
+      room,
+      tenant,
+      deposit: finalDeposit,
+      rent: finalRent,
+      username: tenantAccount.username,
+    }).catch((err) => console.warn('[Telegram Admin Alert Error]', err.message));
 
     const shareInfo = telegramService.formatTenantShareMessage({
       tenant,

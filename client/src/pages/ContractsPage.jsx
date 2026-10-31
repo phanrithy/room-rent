@@ -87,6 +87,14 @@ export function ContractsPage() {
   const [createdTenantAccount, setCreatedTenantAccount] = useState(null);
   const [copiedTenantCreds, setCopiedTenantCreds] = useState(false);
 
+  // Decline Application Modal State
+  const [decliningApp, setDecliningApp] = useState(null);
+  const [declineReason, setDeclineReason] = useState('បន្ទប់ត្រូវបានជួលរួចហើយ (Room already leased)');
+  const [customDeclineReason, setCustomDeclineReason] = useState('');
+  const [decliningSubmitting, setDecliningSubmitting] = useState(false);
+  const [declineResultModal, setDeclineResultModal] = useState(null);
+  const [copiedDeclineText, setCopiedDeclineText] = useState(false);
+
   // End Contract / Move-out Modal State
   const [endingContract, setEndingContract] = useState(null);
   const [contractForDocs, setContractForDocs] = useState(null);
@@ -175,14 +183,35 @@ export function ContractsPage() {
     setIsWizardOpen(true);
   };
 
-  const handleRejectApplication = async (appId) => {
+  const handleConfirmDecline = async (e) => {
+    e.preventDefault();
+    if (!decliningApp) return;
+    setDecliningSubmitting(true);
+    const finalReason = declineReason === 'custom' ? customDeclineReason.trim() : declineReason;
     try {
-      await apiRequest(`applications/${appId}/reject`, { method: 'POST' });
-      showSuccess(i18n.language === 'km' ? 'ពាក្យស្នើសុំត្រូវបានបដិសេធ' : 'Application declined');
+      const res = await apiRequest(`applications/${decliningApp.id}/reject`, {
+        method: 'POST',
+        body: JSON.stringify({ reason: finalReason }),
+      });
+      showSuccess(i18n.language === 'km' ? 'ពាក្យស្នើសុំត្រូវបានបដិសេធ & បានផ្ញើដំណឹងតាម Telegram' : 'Application declined & notice sent via Telegram');
+      setDeclineResultModal({
+        app: decliningApp,
+        reason: finalReason,
+        telegramSent: res.telegramSent,
+        shareInfo: res.shareInfo,
+      });
+      setDecliningApp(null);
+      setCustomDeclineReason('');
       fetchPendingApplications();
     } catch (err) {
       showError(err.message || 'Failed to decline application');
+    } finally {
+      setDecliningSubmitting(false);
     }
+  };
+
+  const handleRejectApplication = (app) => {
+    setDecliningApp(app);
   };
 
   // Check URL params for direct action
@@ -285,8 +314,8 @@ export function ContractsPage() {
       });
       showSuccess(t('contracts.newContract') + ' created successfully!');
       setIsWizardOpen(false);
-      if (res?.tenantAccount) {
-        setCreatedTenantAccount(res.tenantAccount);
+      if (res?.contract?.tenantAccount || res?.tenantAccount) {
+        setCreatedTenantAccount(res.contract?.tenantAccount || res.tenantAccount);
       }
       fetchContracts();
     } catch (err) {
@@ -524,9 +553,9 @@ export function ContractsPage() {
                     size="sm"
                     variant="ghost"
                     className="text-xs text-danger hover:bg-danger-bg"
-                    onClick={() => handleRejectApplication(app.id)}
+                    onClick={() => handleRejectApplication(app)}
                   >
-                    Decline
+                    {i18n.language === 'km' ? 'បដិសេធ' : 'Decline'}
                   </Button>
                 </div>
               </div>
@@ -1020,6 +1049,15 @@ export function ContractsPage() {
                   </span>
                 </div>
               </div>
+
+              <div className="pt-2 border-t border-border flex items-center gap-1.5 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                <span>
+                  {i18n.language === 'km'
+                    ? 'សារដំណឹងយល់ព្រម និងលេខកូដសម្ងាត់ត្រូវបានផ្ញើទៅ Telegram របស់អ្នកជួលដោយស្វ័យប្រវត្តិ។'
+                    : 'Approval notice and login credentials dispatched via Telegram Bot.'}
+                </span>
+              </div>
             </div>
 
             <div className="flex flex-wrap items-center justify-end gap-2.5 pt-3 border-t border-border">
@@ -1052,6 +1090,167 @@ export function ContractsPage() {
                 type="button"
                 variant="primary"
                 onClick={() => setCreatedTenantAccount(null)}
+              >
+                Done
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Decline Application Modal */}
+      <Modal
+        isOpen={!!decliningApp}
+        onClose={() => { setDecliningApp(null); setCustomDeclineReason(''); }}
+        title={i18n.language === 'km' ? 'បដិសេធពាក្យស្នើសុំជួលបន្ទប់' : 'Decline Room Application'}
+        size="md"
+      >
+        {decliningApp && (
+          <form onSubmit={handleConfirmDecline} className="space-y-4">
+            <div className="p-3.5 rounded-xl bg-surface-subtle border border-border text-xs space-y-1.5">
+              <div className="font-bold text-sm text-content-primary">
+                Room #{decliningApp.roomNumber} • {decliningApp.tenantName}
+              </div>
+              <div className="text-content-muted">
+                Phone: {decliningApp.tenantPhone} {decliningApp.telegramChatId ? `• Telegram: ${decliningApp.telegramChatId}` : ''}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-content-primary">
+                {i18n.language === 'km' ? 'មូលហេតុនៃការបដិសេធ (Reason for Declining)' : 'Select Reason for Declining'}
+              </label>
+              <select
+                value={declineReason}
+                onChange={(e) => setDeclineReason(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-content-primary text-xs outline-none focus:border-primary"
+              >
+                <option value="បន្ទប់ត្រូវបានជួលរួចហើយ (Room already leased)">
+                  {i18n.language === 'km' ? 'បន្ទប់ត្រូវបានជួលរួចហើយ (Room already leased)' : 'Room already leased to another applicant'}
+                </option>
+                <option value="លក្ខខណ្ឌកក់ប្រាក់មិនត្រូវគ្នា (Deposit terms not agreed)">
+                  {i18n.language === 'km' ? 'លក្ខខណ្ឌកក់ប្រាក់មិនត្រូវគ្នា (Deposit terms not agreed)' : 'Deposit or payment terms not agreed'}
+                </option>
+                <option value="ឯកសារមិនគ្រប់គ្រាន់ (Incomplete documents)">
+                  {i18n.language === 'km' ? 'ឯកសារមិនគ្រប់គ្រាន់ (Incomplete documents)' : 'Incomplete ID or documents'}
+                </option>
+                <option value="custom">
+                  {i18n.language === 'km' ? 'ផ្សេងៗ (បញ្ជាក់ផ្ទាល់ខ្លួន...)' : 'Other (Type custom reason...)'}
+                </option>
+              </select>
+            </div>
+
+            {declineReason === 'custom' && (
+              <Input
+                label={i18n.language === 'km' ? 'មូលហេតុជាក់លាក់' : 'Custom Reason'}
+                placeholder="e.g. Move-in date not compatible"
+                value={customDeclineReason}
+                onChange={(e) => setCustomDeclineReason(e.target.value)}
+                required
+              />
+            )}
+
+            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-300 flex items-start gap-2">
+              <Send className="w-4 h-4 shrink-0 mt-0.5 text-[#229ED9]" />
+              <span>
+                {i18n.language === 'km'
+                  ? 'ប្រព័ន្ធ Telegram Bot នឹងផ្ញើសារដំណឹងបដិសេធនេះដោយស្វ័យប្រវត្តិកាន់អ្នកជួលតាម Telegram។'
+                  : 'Our Telegram Bot will automatically send this decline notice to the applicant.'}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => { setDecliningApp(null); setCustomDeclineReason(''); }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="danger"
+                size="sm"
+                loading={decliningSubmitting}
+                icon={Send}
+              >
+                {i18n.language === 'km' ? 'បដិសេធ & ផ្ញើដំណឹង Telegram' : 'Decline & Notify via Telegram'}
+              </Button>
+            </div>
+          </form>
+        )}
+      </Modal>
+
+      {/* Decline Result Modal */}
+      <Modal
+        isOpen={!!declineResultModal}
+        onClose={() => setDeclineResultModal(null)}
+        title={i18n.language === 'km' ? 'ដំណឹងបដិសេធតាម Telegram' : 'Decline Notice Dispatched'}
+        size="md"
+      >
+        {declineResultModal && (
+          <div className="space-y-4">
+            <div className="p-4 rounded-xl bg-surface-subtle border border-border space-y-2 text-xs">
+              <div className="flex items-center gap-2 text-content-primary font-bold">
+                <span className="text-danger font-black">Declined:</span>
+                <span>Room #{declineResultModal.app.roomNumber} • {declineResultModal.app.tenantName}</span>
+              </div>
+              <p className="text-content-muted">
+                Reason: <span className="font-medium text-content-secondary">{declineResultModal.reason}</span>
+              </p>
+
+              <div className="pt-2 border-t border-border">
+                {declineResultModal.telegramSent ? (
+                  <div className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5 text-xs">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Automated message delivered to tenant via Telegram Bot!</span>
+                  </div>
+                ) : (
+                  <div className="text-content-muted text-[11px] space-y-1">
+                    <span className="text-amber-600 dark:text-amber-400 font-semibold block">
+                      ℹ️ Notice recorded in system.
+                    </span>
+                    <span>You can tap below to send the notice directly to the tenant's Telegram contact:</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-end gap-2.5 pt-3 border-t border-border">
+              {declineResultModal.shareInfo?.directTelegramUrl && (
+                <a
+                  href={declineResultModal.shareInfo.directTelegramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#229ED9] text-white hover:bg-[#1E88E5] transition-all shadow-xs"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Send via Telegram Chat</span>
+                  <ExternalLink className="w-3 h-3 opacity-80" />
+                </a>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                icon={copiedDeclineText ? Check : Copy}
+                onClick={() => {
+                  if (declineResultModal.shareInfo?.plainText) {
+                    navigator.clipboard.writeText(declineResultModal.shareInfo.plainText);
+                    setCopiedDeclineText(true);
+                    showSuccess('Notice text copied to clipboard!');
+                    setTimeout(() => setCopiedDeclineText(false), 2000);
+                  }
+                }}
+              >
+                {copiedDeclineText ? 'Copied' : 'Copy Notice Text'}
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                onClick={() => setDeclineResultModal(null)}
               >
                 Done
               </Button>

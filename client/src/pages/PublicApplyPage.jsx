@@ -19,6 +19,8 @@ import {
   ArrowRight,
   ShieldCheck,
   FileText,
+  AlertCircle,
+  ExternalLink,
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { setAppLanguage } from '../i18n/index.js';
@@ -51,6 +53,21 @@ export function PublicApplyPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submissionResult, setSubmissionResult] = useState(null);
   const [copiedCreds, setCopiedCreds] = useState(false);
+  const [botInfo, setBotInfo] = useState({
+    hasBot: true,
+    botUsername: 'sunriserent_cambodia_bot',
+    botName: 'Sunrise Rent Bot',
+    botLink: 'https://t.me/sunriserent_cambodia_bot',
+  });
+
+  useEffect(() => {
+    fetch('/api/public/bot-info')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.botUsername) setBotInfo(data);
+      })
+      .catch(() => {});
+  }, []);
 
   // Load available rooms or room info
   useEffect(() => {
@@ -268,6 +285,35 @@ export function PublicApplyPage() {
               </div>
             </div>
 
+            {/* Telegram Bot Connect on Success */}
+            <div className="p-3.5 rounded-xl border border-[#229ED9]/30 bg-[#229ED9]/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-[#229ED9] text-white flex items-center justify-center shrink-0">
+                  <Send className="w-4 h-4 fill-current" />
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-content-primary block">
+                    {i18n.language === 'km' ? 'ភ្ជាប់ជាមួយ Telegram Bot ឥឡូវនេះ' : 'Connect Telegram Bot Now'}
+                  </span>
+                  <span className="text-[11px] text-content-muted block">
+                    {i18n.language === 'km'
+                      ? 'ដើម្បីទទួលដំណឹងភ្លាមៗនៅពេលម្ចាស់ផ្ទះយល់ព្រម ឬបដិសេធ'
+                      : 'To receive direct message when landlord accepts or declines'}
+                  </span>
+                </div>
+              </div>
+              <a
+                href={`${botInfo.botLink}?start=phone_${phone || submissionResult.credentials.username}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#229ED9] hover:bg-[#1e8ec3] text-white text-xs font-bold shrink-0 transition-colors"
+              >
+                <Send className="w-3.5 h-3.5 fill-current" />
+                <span>Open Bot</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+
             {/* Actions */}
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <Button
@@ -370,7 +416,53 @@ export function PublicApplyPage() {
 
             {(!roomDetails || roomDetails.status === 'available') && (
               <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Full Name */}
+                {/* Telegram Bot Connection Card */}
+                <div className="p-3.5 sm:p-4 rounded-xl border border-[#229ED9]/30 bg-[#229ED9]/10 dark:bg-[#229ED9]/5 space-y-2.5">
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-full bg-[#229ED9] text-white flex items-center justify-center shadow-xs shrink-0 mt-0.5">
+                      <Send className="w-4 h-4 fill-current" />
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <h4 className="text-xs sm:text-sm font-bold text-content-primary">
+                          {i18n.language === 'km'
+                            ? 'ភ្ជាប់ជាមួយ Telegram Bot ដើម្បីទទួលដំណឹងសម្រេច'
+                            : 'Connect Telegram Bot for Application Decision'}
+                        </h4>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider">
+                          {i18n.language === 'km' ? 'ផ្ញើដំណឹងស្វ័យប្រវត្តិ' : 'Auto-Notification'}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-content-muted leading-relaxed">
+                        {i18n.language === 'km'
+                          ? 'នៅពេលម្ចាស់ផ្ទះពិនិត្យពាក្យស្នើសុំរបស់អ្នក (យល់ព្រម ឬបដិសេធ) ប្រព័ន្ធនឹងផ្ញើសារដំណឹង និងពាក្យសម្ងាត់ចូលប្រើប្រាស់ទៅកាន់ Telegram របស់អ្នកដោយស្វ័យប្រវត្តិ។'
+                          : 'When the landlord reviews your application (Accept or Decline), our bot will automatically send the decision and login credentials directly to your Telegram.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="pt-1 flex flex-col sm:flex-row sm:items-center gap-2">
+                    <a
+                      href={`${botInfo.botLink}?start=apply_${roomDetails?.roomNumber || 'room'}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#229ED9] hover:bg-[#1e8ec3] text-white text-xs font-bold shadow-xs transition-all"
+                    >
+                      <Send className="w-3.5 h-3.5 fill-current" />
+                      <span>
+                        {i18n.language === 'km'
+                          ? `ចុចទីនេះដើម្បីភ្ជាប់ Telegram Bot (@${botInfo.botUsername})`
+                          : `Click to Connect Telegram Bot (@${botInfo.botUsername})`}
+                      </span>
+                      <ExternalLink className="w-3 h-3 opacity-80" />
+                    </a>
+                    <span className="text-[10px] text-content-muted italic">
+                      {i18n.language === 'km' ? '👉 បើក Telegram ហើយចុច START' : '👉 Opens Telegram, then press START'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Full Name */}
               <Input
                 label={i18n.language === 'km' ? 'ឈ្មោះពេញរបស់អ្នកជួល' : 'Tenant Full Name'}
                 icon={User}
@@ -451,9 +543,14 @@ export function PublicApplyPage() {
                 <Input
                   label={i18n.language === 'km' ? 'Telegram (មិនបង្ខំ)' : 'Telegram Username / ID'}
                   icon={Send}
-                  placeholder="@sokha_c"
+                  placeholder="@sokha_c or 012345678"
                   value={telegram}
                   onChange={(e) => setTelegram(e.target.value)}
+                  helperText={
+                    i18n.language === 'km'
+                      ? 'វាយ @username ឬលេខទូរស័ព្ទ Telegram'
+                      : 'Enter @username or phone number linked to Telegram'
+                  }
                 />
               </div>
 
