@@ -30,6 +30,7 @@ import {
 
 import { PageHeader } from '../components/common/PageHeader.jsx';
 import { Button } from '../components/common/Button.jsx';
+import { DatePicker } from '../components/common/DatePicker.jsx';
 import { Card } from '../components/common/Card.jsx';
 import { StatCard } from '../components/common/StatCard.jsx';
 import { Tabs } from '../components/common/Tabs.jsx';
@@ -185,14 +186,14 @@ export function ReportsPage() {
         />
 
         <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-content-muted" />
           {activeTab === 'monthly' ? (
-            <input
-              type="month"
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
-              className="text-xs font-mono bg-surface-subtle border border-border rounded-lg px-2.5 py-1.5 text-content-primary focus:outline-none focus:ring-1 focus:ring-primary"
-            />
+            <div className="w-48">
+              <DatePicker
+                mode="month"
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+              />
+            </div>
           ) : (
             <select
               value={selectedYear}

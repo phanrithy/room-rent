@@ -306,25 +306,26 @@ export function ExpensesPage() {
       {/* Filter Row: Month picker + Category Tabs */}
       <div className="bg-surface border border-border rounded-xl p-3 shadow-xs flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-content-muted" />
-          <input
-            type="month"
-            value={month === 'all' ? '' : month}
-            onChange={(e) => {
-              setMonth(e.target.value || 'all');
-              setPage(1);
-            }}
-            className="text-xs font-mono bg-surface-subtle border border-border rounded-lg px-2.5 py-1.5 text-content-primary focus:outline-none focus:ring-1 focus:ring-primary"
-          />
+          <div className="w-52">
+            <DatePicker
+              mode="month"
+              value={month === 'all' ? '' : month}
+              onChange={(e) => {
+                setMonth(e.target.value || 'all');
+                setPage(1);
+              }}
+              placeholder={i18n.language === 'km' ? 'ជ្រើសរើសខែ...' : 'Select month...'}
+            />
+          </div>
           {month !== 'all' && (
             <button
               onClick={() => {
                 setMonth('all');
                 setPage(1);
               }}
-              className="text-xs text-content-muted hover:text-content-primary underline"
+              className="text-xs text-primary hover:underline font-semibold"
             >
-              All Months
+              {i18n.language === 'km' ? 'គ្រប់ខែទាំងអស់' : 'All Months'}
             </button>
           )}
         </div>
