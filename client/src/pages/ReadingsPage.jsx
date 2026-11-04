@@ -206,12 +206,16 @@ export function ReadingsPage() {
         <div className="flex items-center gap-4 text-xs font-semibold text-content-secondary">
           <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-warning-bg border border-warning-border text-warning-text">
             <Zap className="w-4 h-4 text-warning" />
-            <span>Electricity: {formatMoney(prices.electricPrice)}/kWh</span>
+            <span>
+              {i18n.language === 'km' ? 'ថ្លៃភ្លើង' : 'Electricity'}: {formatMoney(prices.electricPrice)}/kWh
+            </span>
           </div>
 
           <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-info-bg border border-info-border text-info-text">
             <Droplets className="w-4 h-4 text-info" />
-            <span>Water: {formatMoney(prices.waterPrice)}/m³</span>
+            <span>
+              {i18n.language === 'km' ? 'ថ្លៃទឹក' : 'Water'}: {formatMoney(prices.waterPrice)}/m³
+            </span>
           </div>
         </div>
       </div>
@@ -242,33 +246,33 @@ export function ReadingsPage() {
                 <th className="px-4 py-3 bg-warning-bg/40 text-warning-text border-l border-border">
                   <div className="flex items-center gap-1">
                     <Zap className="w-3.5 h-3.5" />
-                    <span>Elec Prev</span>
+                    <span>{i18n.language === 'km' ? 'ភ្លើងចាស់' : 'Elec Prev'}</span>
                   </div>
                 </th>
                 <th className="px-4 py-3 bg-warning-bg/40 text-warning-text">
-                  <span>Elec Curr</span>
+                  <span>{i18n.language === 'km' ? 'ភ្លើងថ្មី' : 'Elec Curr'}</span>
                 </th>
                 <th className="px-4 py-3 bg-warning-bg/40 text-warning-text text-right">
-                  <span>Elec Units</span>
+                  <span>{i18n.language === 'km' ? 'គីឡូភ្លើង' : 'Elec Units'}</span>
                 </th>
                 {/* Water Group */}
                 <th className="px-4 py-3 bg-info-bg/40 text-info-text border-l border-border">
                   <div className="flex items-center gap-1">
                     <Droplets className="w-3.5 h-3.5" />
-                    <span>Water Prev</span>
+                    <span>{i18n.language === 'km' ? 'ទឹកចាស់' : 'Water Prev'}</span>
                   </div>
                 </th>
                 <th className="px-4 py-3 bg-info-bg/40 text-info-text">
-                  <span>Water Curr</span>
+                  <span>{i18n.language === 'km' ? 'ទឹកថ្មី' : 'Water Curr'}</span>
                 </th>
                 <th className="px-4 py-3 bg-info-bg/40 text-info-text text-right">
-                  <span>Water Units</span>
+                  <span>{i18n.language === 'km' ? 'គូបទឹក' : 'Water Units'}</span>
                 </th>
                 {/* Estimate */}
                 <th className="px-4 py-3 text-right border-l border-border">
                   {t('readings.estCost')}
                 </th>
-                <th className="px-4 py-3 text-center">Status</th>
+                <th className="px-4 py-3 text-center">{t('common.status')}</th>
               </tr>
             </thead>
 
@@ -293,7 +297,7 @@ export function ReadingsPage() {
                         #{row.roomNumber}
                       </span>
                       <span className="block text-[11px] text-content-muted">
-                        Floor {row.floor}
+                        {t('dashboard.floorN', { floor: row.floor })}
                       </span>
                     </td>
 
@@ -304,7 +308,9 @@ export function ReadingsPage() {
                           {row.tenantName}
                         </span>
                       ) : (
-                        <span className="text-content-muted italic">No active tenant</span>
+                        <span className="text-content-muted italic">
+                          {i18n.language === 'km' ? 'គ្មានអ្នកជួល' : 'No active tenant'}
+                        </span>
                       )}
                     </td>
 
@@ -386,10 +392,12 @@ export function ReadingsPage() {
                       {row.isRecorded ? (
                         <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-success bg-success-bg px-2 py-0.5 rounded-full border border-success-border">
                           <CheckCircle2 className="w-3 h-3" />
-                          Saved
+                          {i18n.language === 'km' ? 'បានរក្សាទុក' : 'Saved'}
                         </span>
                       ) : (
-                        <span className="text-xs text-content-muted">Draft</span>
+                        <span className="text-xs text-content-muted">
+                          {i18n.language === 'km' ? 'ព្រាង' : 'Draft'}
+                        </span>
                       )}
                     </td>
                   </tr>

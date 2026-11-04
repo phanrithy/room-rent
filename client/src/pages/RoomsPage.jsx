@@ -42,7 +42,7 @@ import { apiRequest } from '../utils/api.js';
 import { formatMoney } from '../utils/format.js';
 
 export function RoomsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
   const { showSuccess, showError } = useToast();
@@ -476,7 +476,11 @@ export function RoomsPage() {
               <div className="p-8 text-center text-content-muted">
                 <DoorOpen className="w-12 h-12 mx-auto mb-3 opacity-40" />
                 <p className="font-semibold text-content-primary">{t('common.noData')}</p>
-                <p className="text-xs mt-1">No rooms match the selected filters.</p>
+                <p className="text-xs mt-1">
+                  {i18n.language === 'km'
+                    ? 'មិនមានបន្ទប់ត្រូវនឹងលក្ខខណ្ឌចម្រាញ់ឡើយ។'
+                    : 'No rooms match the selected filters.'}
+                </p>
               </div>
             </Card>
           ) : (
@@ -533,7 +537,7 @@ export function RoomsPage() {
                       </div>
                     ) : (
                       <p className="text-xs text-content-muted italic">
-                        {room.note || 'No active tenant'}
+                        {room.note || (i18n.language === 'km' ? 'គ្មានអ្នកជួល' : 'No active tenant')}
                       </p>
                     )}
                   </div>
@@ -555,7 +559,7 @@ export function RoomsPage() {
                         )}
                         <IconButton
                           icon={QrCode}
-                          label="Scan to Rent QR Poster"
+                          label={i18n.language === 'km' ? 'ផ្ទាំង QR ស្កេនជួល' : 'Scan to Rent QR Poster'}
                           size="sm"
                           variant={isAdmin ? 'outline' : 'primary'}
                           onClick={() => setQrModalRoom(room)}
@@ -564,7 +568,7 @@ export function RoomsPage() {
                           <>
                             <IconButton
                               icon={Wrench}
-                              label="Maintenance"
+                              label={i18n.language === 'km' ? 'ស្ថានភាពជួសជុល' : 'Maintenance'}
                               size="sm"
                               variant="ghost"
                               onClick={() => handleToggleMaintenance(room)}
@@ -594,7 +598,7 @@ export function RoomsPage() {
                           <>
                             <IconButton
                               icon={Wrench}
-                              label="Maintenance"
+                              label={i18n.language === 'km' ? 'ស្ថានភាពជួសជុល' : 'Maintenance'}
                               size="sm"
                               variant={room.status === 'maintenance' ? 'primary' : 'ghost'}
                               onClick={() => handleToggleMaintenance(room)}
@@ -655,7 +659,7 @@ export function RoomsPage() {
           <div className="grid grid-cols-2 gap-3">
             <Input
               label={t('rooms.roomNumber')}
-              placeholder="e.g. 101"
+              placeholder={i18n.language === 'km' ? 'ឧ. ១០១' : 'e.g. 101'}
               value={formRoomNumber}
               onChange={(e) => setFormRoomNumber(e.target.value)}
               required
@@ -675,7 +679,11 @@ export function RoomsPage() {
             value={formMonthlyRent}
             onChange={(cents) => setFormMonthlyRent(cents)}
             required
-            helperText="Default price applied to new rental contracts"
+            helperText={
+              i18n.language === 'km'
+                ? 'តម្លៃជួលគោលដែលត្រូវអនុវត្តសម្រាប់កិច្ចសន្យាថ្មី'
+                : 'Default price applied to new rental contracts'
+            }
           />
 
           {!editingRoom && (
@@ -687,13 +695,21 @@ export function RoomsPage() {
                 { value: 'available', label: t('status.available') },
                 { value: 'maintenance', label: t('status.maintenance') },
               ]}
-              helperText="Rooms become occupied automatically when a contract is created"
+              helperText={
+                i18n.language === 'km'
+                  ? 'បន្ទប់នឹងក្លាយជា "មានអ្នកជួល" ដោយស្វ័យប្រវត្តិនៅពេលកិច្ចសន្យាត្រូវបានបង្កើត'
+                  : 'Rooms become occupied automatically when a contract is created'
+              }
             />
           )}
 
           <Input
             label={t('common.note')}
-            placeholder="e.g. Balcony, air conditioner, window view..."
+            placeholder={
+              i18n.language === 'km'
+                ? 'ឧ. មានយ៉រមុខបន្ទប់ ម៉ាស៊ីនត្រជាក់ បង្អួចធំ...'
+                : 'e.g. Balcony, air conditioner, window view...'
+            }
             value={formNote}
             onChange={(e) => setFormNote(e.target.value)}
           />

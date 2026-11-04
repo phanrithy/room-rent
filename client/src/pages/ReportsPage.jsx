@@ -122,7 +122,7 @@ export function ReportsPage() {
   // Prepare chart data for Annual view
   const annualChartData = yearlyData?.months?.map((m) => {
     const monthNum = m.month.split('-')[1];
-    const monthNames = [
+    const enMonthNames = [
       'Jan',
       'Feb',
       'Mar',
@@ -136,8 +136,23 @@ export function ReportsPage() {
       'Nov',
       'Dec',
     ];
+    const kmMonthNames = [
+      'មករា',
+      'កុម្ភៈ',
+      'មីនា',
+      'មេសា',
+      'ឧសភា',
+      'មិថុនា',
+      'កក្កដា',
+      'សីហា',
+      'កញ្ញា',
+      'តុលា',
+      'វិច្ឆិកា',
+      'ធ្នូ',
+    ];
+    const mIdx = parseInt(monthNum, 10) - 1;
     return {
-      month: monthNames[parseInt(monthNum, 10) - 1],
+      month: i18n.language === 'km' ? kmMonthNames[mIdx] : enMonthNames[mIdx],
       revenue: Math.round(m.revenue / 100),
       expenses: Math.round(m.expenses / 100),
       profit: Math.round(m.netProfit / 100),
@@ -186,7 +201,7 @@ export function ReportsPage() {
             >
               {[2024, 2025, 2026, 2027, 2028].map((y) => (
                 <option key={y} value={y}>
-                  Year {y}
+                  {i18n.language === 'km' ? `ឆ្នាំ ${y}` : `Year ${y}`}
                 </option>
               ))}
             </select>
@@ -235,7 +250,11 @@ export function ReportsPage() {
             <StatCard
               title={t('reports.occupancy')}
               value={`${monthlyData.occupancy.rate}%`}
-              subtitle={`${monthlyData.occupancy.occupiedRooms} / ${monthlyData.occupancy.totalRooms} rooms active`}
+              subtitle={
+                i18n.language === 'km'
+                  ? `ជួលបាន ${monthlyData.occupancy.occupiedRooms} / ${monthlyData.occupancy.totalRooms} បន្ទប់`
+                  : `${monthlyData.occupancy.occupiedRooms} / ${monthlyData.occupancy.totalRooms} rooms active`
+              }
               icon={Building2}
             />
           </div>
@@ -245,35 +264,49 @@ export function ReportsPage() {
             {/* Billed Summary */}
             <Card
               title={t('reports.billedBreakdown')}
-              subtitle={`Total Invoices: ${monthlyData.billed.invoiceCount}`}
+              subtitle={
+                i18n.language === 'km'
+                  ? `វិក្កយបត្រសរុប៖ ${monthlyData.billed.invoiceCount}`
+                  : `Total Invoices: ${monthlyData.billed.invoiceCount}`
+              }
             >
               <div className="space-y-3 p-2">
                 <div className="flex justify-between items-center text-sm py-1 border-b border-border">
-                  <span className="text-content-secondary">Room Rent</span>
+                  <span className="text-content-secondary">
+                    {i18n.language === 'km' ? 'ថ្លៃឈ្នួលបន្ទប់' : 'Room Rent'}
+                  </span>
                   <span className="font-mono font-semibold text-content-primary">
                     {formatMoney(monthlyData.billed.rent)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-sm py-1 border-b border-border">
-                  <span className="text-content-secondary">Electricity</span>
+                  <span className="text-content-secondary">
+                    {i18n.language === 'km' ? 'ថ្លៃភ្លើង' : 'Electricity'}
+                  </span>
                   <span className="font-mono font-semibold text-content-primary">
                     {formatMoney(monthlyData.billed.electric)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-sm py-1 border-b border-border">
-                  <span className="text-content-secondary">Water</span>
+                  <span className="text-content-secondary">
+                    {i18n.language === 'km' ? 'ថ្លៃទឹក' : 'Water'}
+                  </span>
                   <span className="font-mono font-semibold text-content-primary">
                     {formatMoney(monthlyData.billed.water)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-sm py-1 border-b border-border">
-                  <span className="text-content-secondary">Extra Charges</span>
+                  <span className="text-content-secondary">
+                    {i18n.language === 'km' ? 'សេវាបន្ថែម' : 'Extra Charges'}
+                  </span>
                   <span className="font-mono font-semibold text-content-primary">
                     {formatMoney(monthlyData.billed.otherCharges)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-sm py-1 border-b border-border">
-                  <span className="text-content-secondary">Late Fees</span>
+                  <span className="text-content-secondary">
+                    {i18n.language === 'km' ? 'ថ្លៃពិន័យយឺតយ៉ាវ' : 'Late Fees'}
+                  </span>
                   <span className="font-mono font-semibold text-danger">
                     {formatMoney(monthlyData.billed.lateFee)}
                   </span>
@@ -288,13 +321,17 @@ export function ReportsPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-2 pt-2 text-xs">
                   <div className="bg-success-bg border border-success-border rounded-lg p-2 text-center">
-                    <span className="text-content-muted block">Collected</span>
+                    <span className="text-content-muted block">
+                      {i18n.language === 'km' ? 'ប្រមូលបាន' : 'Collected'}
+                    </span>
                     <span className="font-mono font-bold text-success text-sm">
                       {formatMoney(monthlyData.billed.collected)}
                     </span>
                   </div>
                   <div className="bg-surface-subtle border border-border rounded-lg p-2 text-center">
-                    <span className="text-content-muted block">Outstanding</span>
+                    <span className="text-content-muted block">
+                      {i18n.language === 'km' ? 'មិនទាន់ប្រមូល' : 'Outstanding'}
+                    </span>
                     <span className="font-mono font-bold text-danger text-sm">
                       {formatMoney(monthlyData.billed.outstanding)}
                     </span>
@@ -306,12 +343,18 @@ export function ReportsPage() {
             {/* Operating Expenses Breakdown */}
             <Card
               title={t('reports.expenseBreakdown')}
-              subtitle={`Total Spent: ${formatMoney(monthlyData.cashFlow.expenses)}`}
+              subtitle={
+                i18n.language === 'km'
+                  ? `ចំណាយសរុប៖ ${formatMoney(monthlyData.cashFlow.expenses)}`
+                  : `Total Spent: ${formatMoney(monthlyData.cashFlow.expenses)}`
+              }
             >
               <div className="space-y-4 p-2">
                 {monthlyData.cashFlow.expenseCategories?.length === 0 ? (
                   <p className="text-sm text-content-muted text-center py-8">
-                    No expenses recorded for this month.
+                    {i18n.language === 'km'
+                      ? 'មិនមានការចំណាយក្នុងខែនេះទេ'
+                      : 'No expenses recorded for this month.'}
                   </p>
                 ) : (
                   monthlyData.cashFlow.expenseCategories.map((c) => {
@@ -348,23 +391,25 @@ export function ReportsPage() {
                 {/* Payments By Method breakdown */}
                 <div className="pt-4 border-t border-border">
                   <span className="text-xs font-bold text-content-primary block mb-2">
-                    Collections By Method
+                    {i18n.language === 'km'
+                      ? 'ការប្រមូលប្រាក់តាមវិធីសាស្រ្ត'
+                      : 'Collections By Method'}
                   </span>
                   <div className="grid grid-cols-3 gap-2 text-xs">
                     <div className="p-2 border border-border rounded-lg text-center">
-                      <span className="text-content-muted block">Cash</span>
+                      <span className="text-content-muted block">{t('payments.cash')}</span>
                       <span className="font-mono font-semibold text-content-primary">
                         {formatMoney(monthlyData.cashFlow.paymentsByMethod.cash)}
                       </span>
                     </div>
                     <div className="p-2 border border-border rounded-lg text-center">
-                      <span className="text-content-muted block">Bank</span>
+                      <span className="text-content-muted block">{t('payments.bank')}</span>
                       <span className="font-mono font-semibold text-content-primary">
                         {formatMoney(monthlyData.cashFlow.paymentsByMethod.bank)}
                       </span>
                     </div>
                     <div className="p-2 border border-border rounded-lg text-center">
-                      <span className="text-content-muted block">KHQR</span>
+                      <span className="text-content-muted block">{t('payments.qr')}</span>
                       <span className="font-mono font-semibold text-primary">
                         {formatMoney(monthlyData.cashFlow.paymentsByMethod.qr)}
                       </span>
@@ -405,8 +450,16 @@ export function ReportsPage() {
 
           {/* 12-Month Performance Chart */}
           <Card
-            title="12-Month Cash Flow & Profit Performance ($)"
-            subtitle="Monthly comparison of collections, operating expenses, and net profit"
+            title={
+              i18n.language === 'km'
+                ? 'លំហូរសាច់ប្រាក់ & ផលចំណេញរយៈពេល ១២ ខែ ($)'
+                : '12-Month Cash Flow & Profit Performance ($)'
+            }
+            subtitle={
+              i18n.language === 'km'
+                ? 'ប្រៀបធៀបចំណូលប្រមូលបាន ការចំណាយប្រតិបត្តិការ និងប្រាក់ចំណេញសុទ្ធ'
+                : 'Monthly comparison of collections, operating expenses, and net profit'
+            }
           >
             <div className="h-80 w-full pt-4">
               <ResponsiveContainer width="100%" height="100%">
@@ -426,19 +479,19 @@ export function ReportsPage() {
                   <Legend wrapperStyle={{ fontSize: '12px' }} />
                   <Bar
                     dataKey="revenue"
-                    name="Revenue ($)"
+                    name={i18n.language === 'km' ? 'ចំណូល ($)' : 'Revenue ($)'}
                     fill="#16a34a"
                     radius={[4, 4, 0, 0]}
                   />
                   <Bar
                     dataKey="expenses"
-                    name="Expenses ($)"
+                    name={i18n.language === 'km' ? 'ចំណាយ ($)' : 'Expenses ($)'}
                     fill="#dc2626"
                     radius={[4, 4, 0, 0]}
                   />
                   <Bar
                     dataKey="profit"
-                    name="Net Profit ($)"
+                    name={i18n.language === 'km' ? 'ចំណេញសុទ្ធ ($)' : 'Net Profit ($)'}
                     fill="#2563eb"
                     radius={[4, 4, 0, 0]}
                   />
@@ -448,17 +501,33 @@ export function ReportsPage() {
           </Card>
 
           {/* 12-Month Table */}
-          <Card title="Monthly Breakdown Details">
+          <Card
+            title={
+              i18n.language === 'km'
+                ? 'តារាងលម្អិតតាមខែនីមួយៗ'
+                : 'Monthly Breakdown Details'
+            }
+          >
             <div className="overflow-x-auto">
               <table className="w-full text-xs text-left">
                 <thead className="bg-surface-subtle text-content-secondary uppercase font-semibold border-b border-border">
                   <tr>
-                    <th className="px-4 py-3">Month</th>
-                    <th className="px-4 py-3">Billed ($)</th>
-                    <th className="px-4 py-3">Revenue ($)</th>
-                    <th className="px-4 py-3">Expenses ($)</th>
-                    <th className="px-4 py-3">Net Profit ($)</th>
-                    <th className="px-4 py-3">Occupancy</th>
+                    <th className="px-4 py-3">{t('common.month')}</th>
+                    <th className="px-4 py-3">
+                      {i18n.language === 'km' ? 'វិក្កយបត្រ ($)' : 'Billed ($)'}
+                    </th>
+                    <th className="px-4 py-3">
+                      {i18n.language === 'km' ? 'ចំណូល ($)' : 'Revenue ($)'}
+                    </th>
+                    <th className="px-4 py-3">
+                      {i18n.language === 'km' ? 'ចំណាយ ($)' : 'Expenses ($)'}
+                    </th>
+                    <th className="px-4 py-3">
+                      {i18n.language === 'km' ? 'ចំណេញសុទ្ធ ($)' : 'Net Profit ($)'}
+                    </th>
+                    <th className="px-4 py-3">
+                      {i18n.language === 'km' ? 'អត្រាជួល' : 'Occupancy'}
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -468,7 +537,7 @@ export function ReportsPage() {
                       className="hover:bg-surface-subtle transition-colors"
                     >
                       <td className="px-4 py-3 font-mono font-bold text-content-primary">
-                        {m.month}
+                        {formatMonth(m.month, i18n.language)}
                       </td>
                       <td className="px-4 py-3 font-mono">
                         {formatMoney(m.billedTotal)}
@@ -492,7 +561,7 @@ export function ReportsPage() {
                     </tr>
                   ))}
                   <tr className="bg-surface-subtle font-bold border-t-2 border-border">
-                    <td className="px-4 py-3">TOTAL</td>
+                    <td className="px-4 py-3">{t('common.total')}</td>
                     <td className="px-4 py-3 font-mono">—</td>
                     <td className="px-4 py-3 font-mono text-success">
                       +{formatMoney(yearlyData.annualRevenue)}

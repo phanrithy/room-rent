@@ -78,6 +78,21 @@ export function toKhmerDigits(input) {
   return String(input).replace(/[0-9]/g, (w) => khmerDigits[parseInt(w, 10)]);
 }
 
+const KHMER_MONTHS = [
+  'មករា',
+  'កុម្ភៈ',
+  'មីនា',
+  'មេសា',
+  'ឧសភា',
+  'មិថុនា',
+  'កក្កដា',
+  'សីហា',
+  'កញ្ញា',
+  'តុលា',
+  'វិច្ឆិកា',
+  'ធ្នូ',
+];
+
 /**
  * Format YYYY-MM-DD date text
  * @param {string} dateStr
@@ -86,6 +101,20 @@ export function toKhmerDigits(input) {
  */
 export function formatDate(dateStr, locale = 'en') {
   if (!dateStr) return '';
+
+  if (locale === 'km') {
+    const raw = String(dateStr).split('T')[0];
+    const parts = raw.split('-');
+    if (parts.length === 3) {
+      const year = parseInt(parts[0], 10);
+      const mIdx = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      if (!isNaN(year) && mIdx >= 0 && mIdx < 12 && !isNaN(day)) {
+        return `${day} ${KHMER_MONTHS[mIdx]} ${year}`;
+      }
+    }
+  }
+
   const date = new Date(dateStr);
   if (isNaN(date.getTime())) return dateStr;
 
@@ -105,10 +134,17 @@ export function formatDate(dateStr, locale = 'en') {
  */
 export function formatMonth(monthStr, locale = 'en') {
   if (!monthStr) return '';
-  const [year, month] = monthStr.split('-');
-  if (!year || !month) return monthStr;
+  const [yearStr, monthNumStr] = monthStr.split('-');
+  if (!yearStr || !monthNumStr) return monthStr;
 
-  const date = new Date(parseInt(year, 10), parseInt(month, 10) - 1, 1);
+  const year = parseInt(yearStr, 10);
+  const mIdx = parseInt(monthNumStr, 10) - 1;
+
+  if (locale === 'km' && !isNaN(year) && mIdx >= 0 && mIdx < 12) {
+    return `${KHMER_MONTHS[mIdx]} ${year}`;
+  }
+
+  const date = new Date(year, mIdx, 1);
   const intlLocale = locale === 'km' ? 'km-KH' : 'en-US';
   return new Intl.DateTimeFormat(intlLocale, {
     year: 'numeric',
