@@ -526,10 +526,10 @@ export function DevGalleryPage() {
           setIsConfirmOpen(false);
           showSuccess(isKm ? 'បន្ទប់ត្រូវបានលុបដោយជោគជ័យ!' : 'Room deleted successfully!');
         }}
-        title={isKm ? 'លុบบន្ទប់' : 'Delete Room'}
+        title={isKm ? 'លុបបន្ទប់' : 'Delete Room'}
         message={
           isKm
-            ? 'តើអ្នកប្រាកដជាចង់លុบบន្ទប់នេះមែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានឡើយ។'
+            ? 'តើអ្នកប្រាកដជាចង់លុបបន្ទប់នេះមែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់ក្រោយវិញបានឡើយ។'
             : 'Are you sure you want to delete this room? This action cannot be undone.'
         }
       />
