@@ -76,7 +76,12 @@ describe('Rooms API & Business Rules', () => {
   test('POST /api/rooms creates a new room as admin', async () => {
     // Ensure clean state for test room
     const db = (await import('../src/db/connection.js')).getDb();
-    db.prepare("DELETE FROM rooms WHERE room_number = '301'").run();
+    const existing = db.prepare("SELECT id FROM rooms WHERE room_number = '901'").get();
+    if (existing) {
+      db.prepare("DELETE FROM contracts WHERE room_id = ?").run(existing.id);
+      db.prepare("DELETE FROM meter_readings WHERE room_id = ?").run(existing.id);
+      db.prepare("DELETE FROM rooms WHERE id = ?").run(existing.id);
+    }
 
     const res = await fetch(`${baseUrl}/api/rooms`, {
       method: 'POST',
@@ -85,15 +90,15 @@ describe('Rooms API & Business Rules', () => {
         Authorization: `Bearer ${adminToken}`,
       },
       body: JSON.stringify({
-        roomNumber: '301',
-        floor: 3,
+        roomNumber: '901',
+        floor: 9,
         monthlyRent: 22000, // $220.00
         note: 'Penthouse view',
       }),
     });
     assert.strictEqual(res.status, 201);
     const data = await res.json();
-    assert.strictEqual(data.room.roomNumber, '301');
+    assert.strictEqual(data.room.roomNumber, '901');
     assert.strictEqual(data.room.status, 'available');
   });
 
@@ -105,14 +110,18 @@ describe('Rooms API & Business Rules', () => {
         Authorization: `Bearer ${adminToken}`,
       },
       body: JSON.stringify({
-        roomNumber: '301',
-        floor: 3,
+        roomNumber: '901',
+        floor: 9,
         monthlyRent: 22000,
       }),
     });
     assert.strictEqual(res.status, 409);
     const data = await res.json();
     assert.strictEqual(data.code, 'ROOM_EXISTS');
+
+    // Clean up test room 901
+    const db = (await import('../src/db/connection.js')).getDb();
+    db.prepare("DELETE FROM rooms WHERE room_number = '901'").run();
   });
 
   test('POST /api/rooms rejects setting status to occupied by hand', async () => {

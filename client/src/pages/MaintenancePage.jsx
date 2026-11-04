@@ -163,25 +163,25 @@ export function MaintenancePage() {
   const columns = [
     {
       key: 'roomNumber',
-      label: 'Room',
+      label: t('maintenance.room'),
       render: (item) => (
         <span className="font-bold text-xs text-content-primary inline-flex items-center gap-1">
           <Building2 className="w-3.5 h-3.5 text-primary" />
-          #{item.roomNumber} (Floor {item.floor})
+          #{item.roomNumber} ({t('rooms.floorN', { floor: item.floor })})
         </span>
       ),
     },
     {
       key: 'description',
-      label: 'Issue Description',
+      label: t('maintenance.issueDescription'),
       render: (item) => (
         <div>
           <span className="font-medium text-xs text-content-primary block">
             {item.description}
           </span>
           <span className="text-[11px] text-content-muted">
-            Reported: {formatDate(item.createdAt?.split('T')[0], i18n.language)}
-            {item.tenantName && ` by ${item.tenantName}`}
+            {formatDate(item.createdAt?.split('T')[0], i18n.language)}
+            {item.tenantName && ` • ${item.tenantName}`}
           </span>
         </div>
       ),
@@ -193,7 +193,7 @@ export function MaintenancePage() {
     },
     {
       key: 'cost',
-      label: 'Cost',
+      label: t('maintenance.cost'),
       render: (item) => (
         <span className="font-mono text-xs font-semibold text-content-primary">
           {item.cost > 0 ? formatMoney(item.cost) : '—'}
@@ -210,7 +210,7 @@ export function MaintenancePage() {
             size="sm"
             onClick={() => openUpdateModal(item)}
           >
-            Update
+            {t('common.edit')}
           </Button>
         ) : null,
     },
@@ -219,15 +219,15 @@ export function MaintenancePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Maintenance & Repairs"
-        subtitle="Manage building repairs, tenant issue reports, and maintenance costs"
+        title={t('maintenance.title')}
+        subtitle={t('maintenance.subtitle')}
         action={
           <Button
             variant="primary"
             icon={Plus}
             onClick={() => setIsCreateOpen(true)}
           >
-            Report Issue
+            {t('maintenance.reportIssue')}
           </Button>
         }
       />
@@ -235,23 +235,23 @@ export function MaintenancePage() {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
-          title="Open Requests"
+          title={t('maintenance.openRequests')}
           value={openCount}
-          subtitle="Awaiting action"
+          subtitle={t('maintenance.awaitingAction')}
           icon={AlertCircle}
           variant="warning"
         />
         <StatCard
-          title="In Progress"
+          title={t('maintenance.inProgress')}
           value={inProgressCount}
-          subtitle="Currently being fixed"
+          subtitle={t('maintenance.currentlyFixing')}
           icon={Clock}
           variant="primary"
         />
         <StatCard
-          title="Completed"
+          title={t('maintenance.resolved')}
           value={doneCount}
-          subtitle="Repairs resolved"
+          subtitle={t('maintenance.repairsDone')}
           icon={CheckCircle2}
           variant="success"
         />

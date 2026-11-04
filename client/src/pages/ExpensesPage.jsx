@@ -275,26 +275,30 @@ export function ExpensesPage() {
         <StatCard
           title={t('expenses.totalSpent')}
           value={formatMoney(summary.totalSpent)}
-          subtitle={month !== 'all' ? `For ${month}` : 'All time'}
+          subtitle={
+            month !== 'all'
+              ? (i18n.language === 'km' ? `សម្រាប់ខែ ${month}` : `For ${month}`)
+              : (i18n.language === 'km' ? 'គ្រប់ពេលទាំងអស់' : 'All time')
+          }
           icon={TrendingDown}
           variant="danger"
         />
         <StatCard
           title={t('expenses.categories.repair')}
           value={formatMoney(getCatAmount('repair'))}
-          subtitle="Maintenance & fixtures"
+          subtitle={i18n.language === 'km' ? 'ជួសជុល & ថែទាំសម្ភារៈ' : 'Maintenance & fixtures'}
           icon={Wrench}
         />
         <StatCard
           title={t('expenses.categories.utilities')}
           value={formatMoney(getCatAmount('utilities'))}
-          subtitle="Electricity, water, trash"
+          subtitle={i18n.language === 'km' ? 'ភ្លើង ទឹក អនាម័យ' : 'Electricity, water, trash'}
           icon={Zap}
         />
         <StatCard
           title={t('expenses.categories.cleaning')}
           value={formatMoney(getCatAmount('cleaning'))}
-          subtitle="Cleaning & supplies"
+          subtitle={i18n.language === 'km' ? 'សម្អាត & សម្ភារៈប្រើប្រាស់' : 'Cleaning & supplies'}
           icon={Sparkles}
         />
       </div>

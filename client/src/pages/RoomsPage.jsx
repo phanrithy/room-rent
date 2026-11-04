@@ -352,30 +352,30 @@ export function RoomsPage() {
       {/* Overview Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
-          title="Total Rooms"
+          title={i18n.language === 'km' ? 'បន្ទប់សរុប' : 'Total Rooms'}
           value={total}
-          subtitle="Building capacity"
+          subtitle={i18n.language === 'km' ? 'ចំនួនបន្ទប់ទាំងអស់' : 'Building capacity'}
           icon={DoorOpen}
           color="primary"
         />
         <StatCard
           title={t('status.available')}
           value={availableCount}
-          subtitle="Ready for lease"
+          subtitle={i18n.language === 'km' ? 'រួចរាល់សម្រាប់ជួល' : 'Ready for lease'}
           icon={Unlock}
           color="success"
         />
         <StatCard
           title={t('status.occupied')}
           value={occupiedCount}
-          subtitle="Currently active"
+          subtitle={i18n.language === 'km' ? 'មានអ្នកស្នាក់នៅ' : 'Currently active'}
           icon={Lock}
           color="primary"
         />
         <StatCard
           title={t('status.maintenance')}
           value={maintenanceCount}
-          subtitle="Needs attention"
+          subtitle={i18n.language === 'km' ? 'ត្រូវការជួសជុល' : 'Needs attention'}
           icon={Wrench}
           color="warning"
         />

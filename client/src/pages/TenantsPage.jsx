@@ -224,10 +224,12 @@ export function TenantsPage() {
         tnt.roomNumber ? (
           <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-primary-light text-primary border border-primary/20">
             <DoorOpen className="w-3 h-3" />
-            Room #{tnt.roomNumber}
+            #{tnt.roomNumber}
           </span>
         ) : (
-          <span className="text-xs text-content-muted">No active lease</span>
+          <span className="text-xs text-content-muted">
+            {i18n.language === 'km' ? 'គ្មានកិច្ចសន្យាសកម្ម' : 'No active lease'}
+          </span>
         ),
     },
     {
@@ -301,16 +303,16 @@ export function TenantsPage() {
       {/* Stat Cards */}
       <div className="grid grid-cols-2 gap-4">
         <StatCard
-          title="Total Registered Tenants"
+          title={i18n.language === 'km' ? 'អ្នកជួលដែលបានចុះឈ្មោះ' : 'Total Registered Tenants'}
           value={total}
-          subtitle="Tenant contacts directory"
+          subtitle={i18n.language === 'km' ? 'បញ្ជីទំនាក់ទំនងអ្នកជួល' : 'Tenant contacts directory'}
           icon={Users}
           color="primary"
         />
         <StatCard
-          title="Currently Active Leases"
+          title={i18n.language === 'km' ? 'កិច្ចសន្យាកំពុងស្នាក់នៅ' : 'Currently Active Leases'}
           value={activeLeaseCount}
-          subtitle="Active residential contracts"
+          subtitle={i18n.language === 'km' ? 'កិច្ចសន្យាសកម្មក្នុងអគារ' : 'Active residential contracts'}
           icon={UserCheck}
           color="success"
         />

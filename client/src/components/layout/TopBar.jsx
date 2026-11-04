@@ -117,16 +117,39 @@ export function TopBar({ onOpenMobileDrawer, onOpenCommandPalette, onOpenShortcu
           <Keyboard className="w-4 h-4" />
         </button>
 
-        {/* Language Switch */}
-        <button
-          type="button"
-          onClick={toggleLanguage}
-          title={i18n.language === 'en' ? 'Switch to Khmer' : 'Switch to English'}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-surface hover:bg-surface-hover text-xs font-semibold text-content-primary transition-colors min-h-[36px]"
-        >
-          <Languages className="w-4 h-4 text-primary" />
-          <span>{i18n.language === 'en' ? 'ខ្មែរ' : 'EN'}</span>
-        </button>
+        {/* Language Switch Toggle Pill */}
+        <div className="flex items-center p-0.5 rounded-lg border border-border bg-surface-subtle" role="group" aria-label="Language selector">
+          <button
+            type="button"
+            onClick={() => {
+              if (i18n.language !== 'km') toggleLanguage();
+            }}
+            className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all flex items-center gap-1 ${
+              i18n.language === 'km'
+                ? 'bg-primary text-white shadow-xs'
+                : 'text-content-muted hover:text-content-primary'
+            }`}
+            title="ប្តូរទៅភាសាខ្មែរ (Switch to Khmer)"
+          >
+            <span>🇰🇭</span>
+            <span className="hidden sm:inline">ខ្មែរ</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (i18n.language !== 'en') toggleLanguage();
+            }}
+            className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all flex items-center gap-1 ${
+              i18n.language === 'en'
+                ? 'bg-primary text-white shadow-xs'
+                : 'text-content-muted hover:text-content-primary'
+            }`}
+            title="Switch to English (ប្តូរទៅអង់គ្លេស)"
+          >
+            <span>🇬🇧</span>
+            <span className="hidden sm:inline">EN</span>
+          </button>
+        </div>
 
         {/* Theme Switch */}
         <button

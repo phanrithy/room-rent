@@ -212,21 +212,21 @@ export function ReportsPage() {
             <StatCard
               title={t('reports.revenue')}
               value={formatMoney(monthlyData.cashFlow.revenue)}
-              subtitle="Cash collected this month"
+              subtitle={i18n.language === 'km' ? 'សាច់ប្រាក់ប្រមូលបានក្នុងខែនេះ' : 'Cash collected this month'}
               icon={TrendingUp}
               variant="success"
             />
             <StatCard
               title={t('reports.expenses')}
               value={formatMoney(monthlyData.cashFlow.expenses)}
-              subtitle="Operating costs spent"
+              subtitle={i18n.language === 'km' ? 'ការចំណាយប្រតិបត្តិការសរុប' : 'Operating costs spent'}
               icon={TrendingDown}
               variant="danger"
             />
             <StatCard
               title={t('reports.netProfit')}
               value={formatMoney(monthlyData.cashFlow.netProfit)}
-              subtitle="Revenue minus expenses"
+              subtitle={i18n.language === 'km' ? 'ចំណូលដកការចំណាយ' : 'Revenue minus expenses'}
               icon={DollarSign}
               variant={
                 monthlyData.cashFlow.netProfit >= 0 ? 'primary' : 'danger'
@@ -381,23 +381,23 @@ export function ReportsPage() {
           {/* Annual KPI Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <StatCard
-              title={`Annual Revenue (${yearlyData.year})`}
+              title={i18n.language === 'km' ? `ចំណូលប្រចាំឆ្នាំ (${yearlyData.year})` : `Annual Revenue (${yearlyData.year})`}
               value={formatMoney(yearlyData.annualRevenue)}
-              subtitle="All collected payments"
+              subtitle={i18n.language === 'km' ? 'ការទូទាត់ប្រមូលបានសរុប' : 'All collected payments'}
               icon={TrendingUp}
               variant="success"
             />
             <StatCard
-              title={`Annual Expenses (${yearlyData.year})`}
+              title={i18n.language === 'km' ? `ការចំណាយប្រចាំឆ្នាំ (${yearlyData.year})` : `Annual Expenses (${yearlyData.year})`}
               value={formatMoney(yearlyData.annualExpenses)}
-              subtitle="All operating costs"
+              subtitle={i18n.language === 'km' ? 'ការចំណាយប្រតិបត្តិការសរុប' : 'All operating costs'}
               icon={TrendingDown}
               variant="danger"
             />
             <StatCard
-              title={`Net Annual Profit (${yearlyData.year})`}
+              title={i18n.language === 'km' ? `ប្រាក់ចំណេញសុទ្ធប្រចាំឆ្នាំ (${yearlyData.year})` : `Net Annual Profit (${yearlyData.year})`}
               value={formatMoney(yearlyData.annualNetProfit)}
-              subtitle="Total operating margin"
+              subtitle={i18n.language === 'km' ? 'ផលចំណេញប្រតិបត្តិការសរុប' : 'Total operating margin'}
               icon={DollarSign}
               variant={yearlyData.annualNetProfit >= 0 ? 'primary' : 'danger'}
             />

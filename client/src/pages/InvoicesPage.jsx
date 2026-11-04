@@ -330,30 +330,30 @@ export function InvoicesPage() {
       {/* Overview Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
-          title="Total Billed"
+          title={i18n.language === 'km' ? 'វិក្កយបត្រសរុប' : 'Total Billed'}
           value={formatMoney(totalAmountSum)}
-          subtitle={`${invoices.length} invoices`}
+          subtitle={i18n.language === 'km' ? `${invoices.length} វិក្កយបត្រ` : `${invoices.length} invoices`}
           icon={Receipt}
           color="primary"
         />
         <StatCard
-          title="Outstanding Balance"
+          title={i18n.language === 'km' ? 'ប្រាក់នៅសល់មិនទាន់បង់' : 'Outstanding Balance'}
           value={formatMoney(totalBalanceSum)}
-          subtitle="Awaiting payment"
+          subtitle={i18n.language === 'km' ? 'រង់ចាំការបង់ប្រាក់' : 'Awaiting payment'}
           icon={DollarSign}
           color="warning"
         />
         <StatCard
           title={t('status.overdue')}
           value={overdueCount}
-          subtitle="Past due date"
+          subtitle={i18n.language === 'km' ? 'ហួសកាលកំណត់' : 'Past due date'}
           icon={AlertTriangle}
           color="danger"
         />
         <StatCard
           title={t('status.paid')}
           value={paidCount}
-          subtitle="Completed"
+          subtitle={i18n.language === 'km' ? 'បានបង់រួចរាល់' : 'Completed'}
           icon={CheckCircle2}
           color="success"
         />

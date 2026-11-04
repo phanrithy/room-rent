@@ -125,7 +125,7 @@ export function PaymentsPage() {
   const tableColumns = [
     {
       key: 'id',
-      label: 'Receipt #',
+      label: i18n.language === 'km' ? 'លេខបង្កាន់ដៃ' : 'Receipt #',
       render: (p) => (
         <span className="font-mono text-xs font-bold text-content-primary">
           REC-{String(p.id).padStart(5, '0')}
@@ -191,14 +191,18 @@ export function PaymentsPage() {
     <div className="space-y-6">
       <PageHeader
         title={t('payments.title')}
-        subtitle="Chronological log of rental and utility payments received"
+        subtitle={
+          i18n.language === 'km'
+            ? 'ប្រវត្តិនៃការទទួលប្រាក់ឈ្នួលបន្ទប់ និងថ្លៃទឹកភ្លើងតាមលំដាប់កាលបរិច្ឆេទ'
+            : 'Chronological log of rental and utility payments received'
+        }
         action={
           <Button
             variant="secondary"
             icon={Download}
             onClick={handleExportExcel}
           >
-            Excel
+            {i18n.language === 'km' ? 'ទាញយក Excel' : 'Export Excel'}
           </Button>
         }
       />

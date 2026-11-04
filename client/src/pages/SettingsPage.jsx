@@ -402,7 +402,11 @@ export function SettingsPage() {
     <form onSubmit={handleSave} className="space-y-8 pb-12">
       <PageHeader
         title={t('settings.title')}
-        subtitle="Manage building details, utility tariffs, KHQR settings, and system preferences"
+        subtitle={
+          i18n.language === 'km'
+            ? 'គ្រប់គ្រងព័ត៌មានអគារ តម្លៃទឹកភ្លើង ការកំណត់ Bakong KHQR និងការកំណត់ប្រព័ន្ធ'
+            : 'Manage building details, utility tariffs, KHQR settings, and system preferences'
+        }
         action={
           <Button variant="primary" icon={Save} type="submit" loading={saving}>
             {t('common.save')}
@@ -413,17 +417,21 @@ export function SettingsPage() {
       {/* 1. Building Information */}
       <Card
         title={t('settings.building')}
-        subtitle="Property details shown on invoices, receipts, and headers"
+        subtitle={
+          i18n.language === 'km'
+            ? 'ព័ត៌មានអគារសម្រាប់បង្ហាញលើវិក្កយបត្រ បង្កាន់ដៃ និងក្បាលទំព័រ'
+            : 'Property details shown on invoices, receipts, and headers'
+        }
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
-            label="Building / Apartment Name"
+            label={i18n.language === 'km' ? 'ឈ្មោះអគារ / ផ្ទះជួល' : 'Building / Apartment Name'}
             value={buildingName}
             onChange={(e) => setBuildingName(e.target.value)}
             required
           />
           <Input
-            label="Street Address / City"
+            label={i18n.language === 'km' ? 'អាសយដ្ឋានផ្លូវ / ទីក្រុង' : 'Street Address / City'}
             value={buildingAddress}
             onChange={(e) => setBuildingAddress(e.target.value)}
             required
@@ -434,7 +442,11 @@ export function SettingsPage() {
       {/* 2. Utility Pricing Rates */}
       <Card
         title={t('settings.pricing')}
-        subtitle="Default rates per unit used to calculate electricity and water costs"
+        subtitle={
+          i18n.language === 'km'
+            ? 'តម្លៃមូលដ្ឋានក្នុងមួយឯកតាសម្រាប់គណនាថ្លៃភ្លើង និងទឹក'
+            : 'Default rates per unit used to calculate electricity and water costs'
+        }
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <MoneyInput
@@ -442,22 +454,26 @@ export function SettingsPage() {
             value={electricPrice}
             onChange={(c) => setElectricPrice(c)}
             required
-            helperText="Stored in cents. Example: $1.50 per kWh"
+            helperText={i18n.language === 'km' ? 'គិតជាសេនដុល្លារ (ឧ. $0.25 ក្នុងមួយ kWh)' : 'Stored in cents. Example: $0.25 per kWh'}
           />
           <MoneyInput
             label={t('settings.waterPrice')}
             value={waterPrice}
             onChange={(c) => setWaterPrice(c)}
             required
-            helperText="Stored in cents. Example: $0.50 per m³"
+            helperText={i18n.language === 'km' ? 'គិតជាសេនដុល្លារ (ឧ. $0.50 ក្នុងមួយ m³)' : 'Stored in cents. Example: $0.50 per m³'}
           />
         </div>
       </Card>
 
       {/* 3. Billing & Invoicing Rules */}
       <Card
-        title="Billing & Due Date Rules"
-        subtitle="Rules governing invoice due dates and overdue penalties"
+        title={i18n.language === 'km' ? 'លក្ខខណ្ឌចេញវិក្កយបត្រ & កាលបរិច្ឆេទ' : 'Billing & Due Date Rules'}
+        subtitle={
+          i18n.language === 'km'
+            ? 'កាលបរិច្ឆេទផុតកំណត់បង់ប្រាក់ប្រចាំខែ និងថ្លៃពិន័យយឺតយ៉ាវ'
+            : 'Rules governing invoice due dates and overdue penalties'
+        }
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
@@ -625,25 +641,29 @@ export function SettingsPage() {
 
       {/* 5. Reminders & Exchange Rate */}
       <Card
-        title="Reminders & Display Currency"
-        subtitle="Khmer Riel conversion rate and automated message timelines"
+        title={i18n.language === 'km' ? 'ការរំលឹកបង់ប្រាក់ & អត្រាប្តូរប្រាក់' : 'Reminders & Display Currency'}
+        subtitle={
+          i18n.language === 'km'
+            ? 'អត្រាប្តូរប្រាក់រៀល និងពេលវេលាផ្ញើសាររំលឹកដោយស្វ័យប្រវត្តិ'
+            : 'Khmer Riel conversion rate and automated message timelines'
+        }
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
-            label="Days Before Due to Send Reminder"
+            label={i18n.language === 'km' ? 'ចំនួនថ្ងៃរំលឹកមុនកាលកំណត់' : 'Days Before Due to Send Reminder'}
             type="number"
             min="1"
             max="14"
             value={reminderDaysBefore}
             onChange={(e) => setReminderDaysBefore(e.target.value)}
-            helperText="Automated notice sent X days prior to due date"
+            helperText={i18n.language === 'km' ? 'ផ្ញើសាររំលឹក X ថ្ងៃ មុនថ្ងៃផុតកំណត់' : 'Automated notice sent X days prior to due date'}
           />
           <Input
             label={t('settings.exchangeRate')}
             type="number"
             value={exchangeRate}
             onChange={(e) => setExchangeRate(e.target.value)}
-            helperText="For display conversion on invoices (e.g. 4,100 KHR per USD)"
+            helperText={i18n.language === 'km' ? 'សម្រាប់គណនាប្រាក់រៀលលើវិក្កយបត្រ (ឧ. ៤,១០០ រៀល / $)' : 'For display conversion on invoices (e.g. 4,100 KHR per USD)'}
           />
         </div>
       </Card>
@@ -746,8 +766,12 @@ export function SettingsPage() {
 
       {/* 6. Language & Theme Preferences */}
       <Card
-        title="Language & Theme Preferences"
-        subtitle="Default interface language and theme styling"
+        title={i18n.language === 'km' ? 'ភាសា & ស្បែកកម្មវិធី' : 'Language & Theme Preferences'}
+        subtitle={
+          i18n.language === 'km'
+            ? 'កំណត់ភាសាលំនាំដើម និងស្បែកពន្លឺ/ងងឹត'
+            : 'Default interface language and theme styling'
+        }
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Select
@@ -774,8 +798,12 @@ export function SettingsPage() {
 
       {/* 7. Properties Management */}
       <Card
-        title="Buildings & Properties"
-        subtitle="Manage multi-building residential properties"
+        title={i18n.language === 'km' ? 'អគារ & សាខាអចលនទ្រព្យ' : 'Buildings & Properties'}
+        subtitle={
+          i18n.language === 'km'
+            ? 'គ្រប់គ្រងអគារស្នាក់នៅច្រើនទីតាំង'
+            : 'Manage multi-building residential properties'
+        }
         action={
           <Button
             variant="secondary"
@@ -783,7 +811,7 @@ export function SettingsPage() {
             icon={Plus}
             onClick={() => setIsPropModalOpen(true)}
           >
-            Add Property
+            {i18n.language === 'km' ? 'បន្ថែមអគារថ្មី' : 'Add Property'}
           </Button>
         }
       >
@@ -809,8 +837,12 @@ export function SettingsPage() {
 
       {/* 8. Staff & User Access */}
       <Card
-        title="Staff & User Management"
-        subtitle="Manage administrative and staff accounts"
+        title={i18n.language === 'km' ? 'បុគ្គលិក & អ្នកប្រើប្រាស់ប្រព័ន្ធ' : 'Staff & User Management'}
+        subtitle={
+          i18n.language === 'km'
+            ? 'គ្រប់គ្រងគណនី Admin និង Staff សម្រាប់ប្រតិបត្តិការ'
+            : 'Manage administrative and staff accounts'
+        }
         action={
           <Button
             variant="secondary"
@@ -818,7 +850,7 @@ export function SettingsPage() {
             icon={UserPlus}
             onClick={() => setIsUserModalOpen(true)}
           >
-            Add Staff User
+            {i18n.language === 'km' ? 'បង្កើតគណនីបុគ្គលិក' : 'Add Staff User'}
           </Button>
         }
       >
@@ -886,8 +918,12 @@ export function SettingsPage() {
 
       {/* 9. Database Backup & Restore */}
       <Card
-        title="Data Backup & Disaster Recovery"
-        subtitle="Snapshot SQLite database or restore from an earlier backup"
+        title={t('settings.backup')}
+        subtitle={
+          i18n.language === 'km'
+            ? 'ទាញយកឯកសារ SQLite បម្រុងទុក ឬស្តារឡើងវិញពីឯកសារចាស់'
+            : 'Snapshot SQLite database or restore from an earlier backup'
+        }
       >
         <div className="flex flex-wrap items-center gap-4">
           <Button
@@ -896,12 +932,14 @@ export function SettingsPage() {
             type="button"
             onClick={handleDownloadBackup}
           >
-            Download SQLite Backup
+            {i18n.language === 'km' ? 'ទាញយកឯកសារបម្រុងទុក (.db)' : 'Download SQLite Backup'}
           </Button>
 
           <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface border border-border text-xs font-semibold text-content-primary hover:bg-surface-subtle transition-colors shadow-xs">
             <Upload className="w-4 h-4 text-primary" />
-            {restoring ? 'Restoring...' : 'Restore Database (.db)'}
+            {restoring
+              ? (i18n.language === 'km' ? 'កំពុងស្តារឡើងវិញ...' : 'Restoring...')
+              : (i18n.language === 'km' ? 'ស្តារទិន្នន័យពីឯកសារ (.db)' : 'Restore Database (.db)')}
             <input
               type="file"
               accept=".db,application/x-sqlite3"

@@ -85,7 +85,7 @@ export function AuditLogsPage() {
   const columns = [
     {
       key: 'createdAt',
-      label: 'Timestamp',
+      label: t('auditLogs.timestamp'),
       sortable: true,
       render: (log) => {
         const d = new Date(log.createdAt);
@@ -101,7 +101,7 @@ export function AuditLogsPage() {
     },
     {
       key: 'username',
-      label: 'User',
+      label: t('auditLogs.user'),
       render: (log) => (
         <div className="flex items-center gap-1.5">
           <User className="w-3.5 h-3.5 text-content-muted" />
@@ -113,12 +113,12 @@ export function AuditLogsPage() {
     },
     {
       key: 'action',
-      label: 'Action',
+      label: t('auditLogs.action'),
       render: (log) => getActionBadge(log.action),
     },
     {
       key: 'tableName',
-      label: 'Table',
+      label: t('auditLogs.table'),
       render: (log) => (
         <code className="bg-surface-subtle border border-border px-1.5 py-0.5 rounded text-[11px] font-mono text-content-primary">
           {log.tableName}
@@ -127,7 +127,7 @@ export function AuditLogsPage() {
     },
     {
       key: 'recordId',
-      label: 'Record #',
+      label: 'ID',
       render: (log) => (
         <span className="font-mono text-xs text-content-muted">
           {log.recordId ? `#${log.recordId}` : '—'}
@@ -136,7 +136,7 @@ export function AuditLogsPage() {
     },
     {
       key: 'actions',
-      label: 'Details',
+      label: t('auditLogs.details'),
       render: (log) => (
         <Button
           variant="ghost"
@@ -144,7 +144,7 @@ export function AuditLogsPage() {
           icon={Eye}
           onClick={() => setSelectedLog(log)}
         >
-          View
+          {t('common.view')}
         </Button>
       ),
     },
@@ -153,8 +153,8 @@ export function AuditLogsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Audit Logs & System Trail"
-        subtitle="Immutable security log of changes, transactions, and user operations"
+        title={t('auditLogs.title')}
+        subtitle={t('auditLogs.subtitle')}
       />
 
       {/* Control row: Table Filter + Search */}
