@@ -37,11 +37,12 @@ export function TopBar({ onOpenMobileDrawer, onOpenCommandPalette, onOpenShortcu
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [showNotifs, setShowNotifs] = useState(false);
 
-  const toggleLanguage = () => {
-    const nextLang = i18n.language === 'en' ? 'km' : 'en';
-    setAppLanguage(nextLang);
+  const currentLang = i18n.language?.startsWith('km') ? 'km' : 'en';
+
+  const handleSelectLanguage = (lang) => {
+    setAppLanguage(lang);
     if (updatePreferences) {
-      updatePreferences({ language: nextLang }).catch(() => {});
+      updatePreferences({ language: lang }).catch(() => {});
     }
   };
 
@@ -121,11 +122,9 @@ export function TopBar({ onOpenMobileDrawer, onOpenCommandPalette, onOpenShortcu
         <div className="flex items-center p-0.5 rounded-lg border border-border bg-surface-subtle" role="group" aria-label="Language selector">
           <button
             type="button"
-            onClick={() => {
-              if (i18n.language !== 'km') toggleLanguage();
-            }}
+            onClick={() => handleSelectLanguage('km')}
             className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all flex items-center gap-1 ${
-              i18n.language === 'km'
+              currentLang === 'km'
                 ? 'bg-primary text-white shadow-xs'
                 : 'text-content-muted hover:text-content-primary'
             }`}
@@ -136,11 +135,9 @@ export function TopBar({ onOpenMobileDrawer, onOpenCommandPalette, onOpenShortcu
           </button>
           <button
             type="button"
-            onClick={() => {
-              if (i18n.language !== 'en') toggleLanguage();
-            }}
+            onClick={() => handleSelectLanguage('en')}
             className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all flex items-center gap-1 ${
-              i18n.language === 'en'
+              currentLang === 'en'
                 ? 'bg-primary text-white shadow-xs'
                 : 'text-content-muted hover:text-content-primary'
             }`}
@@ -183,24 +180,32 @@ export function TopBar({ onOpenMobileDrawer, onOpenCommandPalette, onOpenShortcu
               onClick={() => setShowNotifs(false)}
             >
               <div className="flex items-center justify-between pb-2 border-b border-border">
-                <span className="font-bold text-content-primary">Notifications</span>
-                <span className="text-[10px] text-content-muted">Daily Automated</span>
+                <span className="font-bold text-content-primary">
+                  {currentLang === 'km' ? 'ការជូនដំណឹង' : 'Notifications'}
+                </span>
+                <span className="text-[10px] text-content-muted">
+                  {currentLang === 'km' ? 'ប្រចាំថ្ងៃស្វ័យប្រវត្តិ' : 'Daily Automated'}
+                </span>
               </div>
               <div className="space-y-1.5 py-1">
                 <div className="p-2 bg-surface-subtle border border-border rounded-lg space-y-0.5">
                   <span className="font-semibold text-content-primary block">
-                    Daily 8:00 AM Cron Ready
+                    {currentLang === 'km' ? 'ប្រព័ន្ធស្វ័យប្រវត្តិម៉ោង ៨:០០ ព្រឹក' : 'Daily 8:00 AM Cron Ready'}
                   </span>
                   <p className="text-[11px] text-content-muted">
-                    Automated reminders and Bakong KHQR auto-reconciler active.
+                    {currentLang === 'km'
+                      ? 'ការរំលឹក និងផ្ទៀងផ្ទាត់ Bakong KHQR ដោយស្វ័យប្រវត្តិកំពុងដំណើរការ'
+                      : 'Automated reminders and Bakong KHQR auto-reconciler active.'}
                   </p>
                 </div>
                 <div className="p-2 bg-surface-subtle border border-border rounded-lg space-y-0.5">
                   <span className="font-semibold text-content-primary block">
-                    System Security Active
+                    {currentLang === 'km' ? 'សុវត្ថិភាពប្រព័ន្ធសកម្ម' : 'System Security Active'}
                   </span>
                   <p className="text-[11px] text-content-muted">
-                    Audit logging all financial and operational events.
+                    {currentLang === 'km'
+                      ? 'កត់ត្រាកំណត់ហេតុប្រតិបត្តិការហិរញ្ញវត្ថុទាំងអស់'
+                      : 'Audit logging all financial and operational events.'}
                   </p>
                 </div>
               </div>
@@ -236,7 +241,9 @@ export function TopBar({ onOpenMobileDrawer, onOpenCommandPalette, onOpenShortcu
               onClick={() => setUserMenuOpen(false)}
             >
               <div className="px-4 py-2 border-b border-border">
-                <p className="text-xs font-medium text-content-muted">Signed in as</p>
+                <p className="text-xs font-medium text-content-muted">
+                  {currentLang === 'km' ? 'បានចូលប្រើជា' : 'Signed in as'}
+                </p>
                 <p className="text-sm font-semibold text-content-primary truncate">{user?.username}</p>
               </div>
 

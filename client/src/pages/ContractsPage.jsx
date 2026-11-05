@@ -492,20 +492,22 @@ export function ContractsPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <span className="font-bold text-sm text-content-primary block">
-                      Room #{app.roomNumber} (Floor {app.floor})
+                      {i18n.language === 'km'
+                        ? `បន្ទប់ #${app.roomNumber} (ជាន់ទី ${app.floor})`
+                        : `Room #${app.roomNumber} (Floor ${app.floor})`}
                     </span>
                     <span className="text-xs text-content-secondary font-medium">
                       {app.tenantName} • {app.tenantPhone}
                     </span>
                   </div>
                   <span className="font-mono font-bold text-xs text-primary">
-                    {formatMoney(app.monthlyRent)}/mo
+                    {formatMoney(app.monthlyRent)}{i18n.language === 'km' ? '/ខែ' : '/mo'}
                   </span>
                 </div>
 
                 <div className="text-[11px] text-content-muted space-y-1">
                   <div>
-                    National ID / Passport:{' '}
+                    {i18n.language === 'km' ? 'អត្តសញ្ញាណប័ណ្ណ / លិខិតឆ្លងដែន៖ ' : 'National ID / Passport: '}
                     <span className="font-mono font-medium text-content-secondary">
                       {app.tenantIdNumber || 'N/A'}
                     </span>
@@ -520,8 +522,10 @@ export function ContractsPage() {
                   )}
                   {app.moveInDate && (
                     <div>
-                      Target Move-in:{' '}
-                      <span className="font-medium text-content-secondary">{app.moveInDate}</span>
+                      {i18n.language === 'km' ? 'ថ្ងៃគ្រោងចូលនៅ៖ ' : 'Target Move-in: '}
+                      <span className="font-medium text-content-secondary">
+                        {formatDate(app.moveInDate, i18n.language)}
+                      </span>
                     </div>
                   )}
                   {app.idDocumentId && (
@@ -533,7 +537,11 @@ export function ContractsPage() {
                         className="text-primary hover:underline font-semibold inline-flex items-center gap-1"
                       >
                         <FileText className="w-3.5 h-3.5" />
-                        <span>View ID Card / Passport Photo</span>
+                        <span>
+                          {i18n.language === 'km'
+                            ? 'មើលរូបថតអត្តសញ្ញាណប័ណ្ណ / លិខិតឆ្លងដែន'
+                            : 'View ID Card / Passport Photo'}
+                        </span>
                         <ExternalLink className="w-3 h-3" />
                       </a>
                     </div>
@@ -595,19 +603,29 @@ export function ContractsPage() {
       <Modal
         isOpen={isWizardOpen}
         onClose={() => setIsWizardOpen(false)}
-        title={`${t('contracts.wizardTitle')} (Step ${step} of 4)`}
+        title={`${t('contracts.wizardTitle')} (${
+          i18n.language === 'km' ? `ជំហានទី ${step} នៃ ៤` : `Step ${step} of 4`
+        })`}
         maxWidth="max-w-xl"
       >
         <div className="space-y-5">
           {/* Progress Indicators */}
           <div className="flex items-center justify-between px-2 text-xs font-semibold text-content-muted border-b border-border pb-3">
-            <span className={step >= 1 ? 'text-primary font-bold' : ''}>1. Room</span>
+            <span className={step >= 1 ? 'text-primary font-bold' : ''}>
+              {i18n.language === 'km' ? '១. បន្ទប់' : '1. Room'}
+            </span>
             <ChevronRight className="w-4 h-4 opacity-40" />
-            <span className={step >= 2 ? 'text-primary font-bold' : ''}>2. Tenant</span>
+            <span className={step >= 2 ? 'text-primary font-bold' : ''}>
+              {i18n.language === 'km' ? '២. អ្នកជួល' : '2. Tenant'}
+            </span>
             <ChevronRight className="w-4 h-4 opacity-40" />
-            <span className={step >= 3 ? 'text-primary font-bold' : ''}>3. Terms</span>
+            <span className={step >= 3 ? 'text-primary font-bold' : ''}>
+              {i18n.language === 'km' ? '៣. លក្ខខណ្ឌ' : '3. Terms'}
+            </span>
             <ChevronRight className="w-4 h-4 opacity-40" />
-            <span className={step >= 4 ? 'text-primary font-bold' : ''}>4. Review</span>
+            <span className={step >= 4 ? 'text-primary font-bold' : ''}>
+              {i18n.language === 'km' ? '៤. ផ្ទៀងផ្ទាត់' : '4. Review'}
+            </span>
           </div>
 
           {wizardError && (
@@ -625,8 +643,16 @@ export function ContractsPage() {
               {availableRooms.length === 0 ? (
                 <div className="p-6 text-center text-content-muted bg-surface-subtle rounded-xl border border-border">
                   <DoorOpen className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  <p className="font-medium text-content-primary">No available rooms right now</p>
-                  <p className="text-xs mt-1">All rooms are currently occupied or under maintenance.</p>
+                  <p className="font-medium text-content-primary">
+                    {i18n.language === 'km'
+                      ? 'មិនមានបន្ទប់ទំនេរនៅពេលនេះទេ'
+                      : 'No available rooms right now'}
+                  </p>
+                  <p className="text-xs mt-1">
+                    {i18n.language === 'km'
+                      ? 'បន្ទប់ទាំងអស់កំពុងមានអ្នកជួល ឬកំពុងជួសជុល។'
+                      : 'All rooms are currently occupied or under maintenance.'}
+                  </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto p-1">
@@ -644,10 +670,13 @@ export function ContractsPage() {
                         <span className="font-bold text-base text-content-primary">
                           #{r.roomNumber}
                         </span>
-                        <span className="text-xs text-content-muted">Floor {r.floor}</span>
+                        <span className="text-xs text-content-muted">
+                          {t('dashboard.floorN', { floor: r.floor })}
+                        </span>
                       </div>
                       <div className="text-xs font-mono font-medium text-content-secondary mt-1">
-                        {formatMoney(r.monthlyRent)}/mo
+                        {formatMoney(r.monthlyRent)}
+                        {i18n.language === 'km' ? '/ខែ' : '/mo'}
                       </div>
                     </div>
                   ))}
@@ -697,10 +726,14 @@ export function ContractsPage() {
                     </div>
                     {tnt.roomNumber ? (
                       <span className="text-[11px] text-content-muted">
-                        Active in #{tnt.roomNumber}
+                        {i18n.language === 'km'
+                          ? `ស្នាក់នៅបន្ទប់ #${tnt.roomNumber}`
+                          : `Active in #${tnt.roomNumber}`}
                       </span>
                     ) : (
-                      <span className="text-[11px] text-success font-medium">Ready</span>
+                      <span className="text-[11px] text-success font-medium">
+                        {i18n.language === 'km' ? 'ទំនេរ' : 'Ready'}
+                      </span>
                     )}
                   </div>
                 ))}
@@ -735,14 +768,22 @@ export function ContractsPage() {
                   value={rentCents}
                   onChange={(cents) => setRentCents(cents)}
                   required
-                  helperText="Agreed monthly rent amount"
+                  helperText={
+                    i18n.language === 'km'
+                      ? 'ថ្លៃឈ្នួលបន្ទប់ប្រចាំខែដែលបានព្រមព្រៀង'
+                      : 'Agreed monthly rent amount'
+                  }
                 />
                 <MoneyInput
                   label={t('contracts.deposit')}
                   value={depositCents}
                   onChange={(cents) => setDepositCents(cents)}
                   required
-                  helperText="Refundable security deposit"
+                  helperText={
+                    i18n.language === 'km'
+                      ? 'ប្រាក់កក់ធានាសុវត្ថិភាព (អាចដកវិញបាន)'
+                      : 'Refundable security deposit'
+                  }
                 />
               </div>
             </div>
@@ -759,7 +800,9 @@ export function ContractsPage() {
                 <div className="flex items-center justify-between pb-2 border-b border-border">
                   <span className="text-content-muted">{t('nav.rooms')}</span>
                   <span className="font-bold text-content-primary">
-                    Room #{selectedRoomObj?.roomNumber} (Floor {selectedRoomObj?.floor})
+                    {i18n.language === 'km'
+                      ? `បន្ទប់ #${selectedRoomObj?.roomNumber} (ជាន់ទី ${selectedRoomObj?.floor})`
+                      : `Room #${selectedRoomObj?.roomNumber} (Floor ${selectedRoomObj?.floor})`}
                   </span>
                 </div>
 
@@ -771,9 +814,11 @@ export function ContractsPage() {
                 </div>
 
                 <div className="flex items-center justify-between pb-2 border-b border-border">
-                  <span className="text-content-muted">Lease Period</span>
+                  <span className="text-content-muted">
+                    {i18n.language === 'km' ? 'រយៈពេលជួល' : 'Lease Period'}
+                  </span>
                   <span className="font-medium text-content-primary">
-                    {startDate} → {endDate}
+                    {formatDate(startDate, i18n.language)} → {formatDate(endDate, i18n.language)}
                   </span>
                 </div>
 
@@ -795,7 +840,9 @@ export function ContractsPage() {
               <div className="p-3 bg-primary-light border border-primary/20 rounded-lg text-xs text-primary leading-relaxed flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>
-                  Confirming this agreement will immediately mark Room #{selectedRoomObj?.roomNumber} as occupied.
+                  {i18n.language === 'km'
+                    ? `ការយល់ព្រមកិច្ចសន្យានេះនឹងដាក់បន្ទប់ #${selectedRoomObj?.roomNumber} ទៅជា "មានអ្នកជួល" ភ្លាមៗ។`
+                    : `Confirming this agreement will immediately mark Room #${selectedRoomObj?.roomNumber} as occupied.`}
                 </span>
               </div>
             </div>
@@ -867,7 +914,9 @@ export function ContractsPage() {
               </div>
 
               <div className="flex items-center justify-between pb-2 border-b border-border">
-                <span className="text-content-muted">Unpaid Invoices</span>
+                <span className="text-content-muted">
+                  {i18n.language === 'km' ? 'វិក្កយបត្រមិនទាន់បង់' : 'Unpaid Invoices'}
+                </span>
                 <span className="font-mono font-bold text-danger">
                   -{formatMoney(settlementData.unpaidInvoicesSum)}
                 </span>
@@ -875,11 +924,19 @@ export function ContractsPage() {
 
               <div>
                 <MoneyInput
-                  label="Damage / Cleaning Charges"
+                  label={
+                    i18n.language === 'km'
+                      ? 'ថ្លៃខូចខាត / ថ្លៃសម្អាត'
+                      : 'Damage / Cleaning Charges'
+                  }
                   value={damageChargesCents}
                   onChange={handleDamageChargesChange}
                   placeholder="0.00"
-                  helperText="Deducted directly from deposit balance"
+                  helperText={
+                    i18n.language === 'km'
+                      ? 'កាត់ចេញពីប្រាក់កក់ដោយផ្ទាល់'
+                      : 'Deducted directly from deposit balance'
+                  }
                 />
               </div>
 
@@ -891,7 +948,11 @@ export function ContractsPage() {
                       ? t('contracts.depositRefund')
                       : t('contracts.tenantOwes')}
                   </span>
-                  <span className="text-[11px] text-content-muted">Net balance settlement</span>
+                  <span className="text-[11px] text-content-muted">
+                    {i18n.language === 'km'
+                      ? 'ការទូទាត់សមតុល្យចុងក្រោយ'
+                      : 'Net balance settlement'}
+                  </span>
                 </div>
                 <div
                   className={`font-mono font-black text-xl ${
@@ -907,7 +968,11 @@ export function ContractsPage() {
 
             <Input
               label={t('common.note')}
-              placeholder="Move-out inspection notes..."
+              placeholder={
+                i18n.language === 'km'
+                  ? 'កំណត់ចំណាំពេលពិនិត្យបន្ទប់...'
+                  : 'Move-out inspection notes...'
+              }
               value={damageNote}
               onChange={(e) => setDamageNote(e.target.value)}
             />
@@ -1028,24 +1093,35 @@ export function ContractsPage() {
             <div className="p-4 rounded-xl bg-surface-subtle border border-border space-y-3 text-xs">
               <div className="flex items-center justify-between pb-2 border-b border-border">
                 <span className="font-semibold text-content-primary">
-                  {createdTenantAccount.name} (Room {createdTenantAccount.roomNumber})
+                  {createdTenantAccount.name} ({i18n.language === 'km' ? 'បន្ទប់' : 'Room'} {createdTenantAccount.roomNumber})
                 </span>
                 <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 font-bold text-[10px]">
-                  {createdTenantAccount.isNew ? 'New Account' : 'Existing Account'}
+                  {createdTenantAccount.isNew
+                    ? i18n.language === 'km'
+                      ? 'គណនីថ្មី'
+                      : 'New Account'
+                    : i18n.language === 'km'
+                    ? 'គណនីចាស់'
+                    : 'Existing Account'}
                 </span>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <span className="text-content-muted block">Username / Phone:</span>
+                  <span className="text-content-muted block">
+                    {i18n.language === 'km' ? 'ឈ្មោះគណនី / ទូរស័ព្ទ៖' : 'Username / Phone:'}
+                  </span>
                   <span className="font-mono font-bold text-sm text-content-primary">
                     {createdTenantAccount.username}
                   </span>
                 </div>
                 <div>
-                  <span className="text-content-muted block">Default Password:</span>
+                  <span className="text-content-muted block">
+                    {i18n.language === 'km' ? 'ពាក្យសម្ងាត់ដំបូង៖' : 'Default Password:'}
+                  </span>
                   <span className="font-mono font-bold text-sm text-primary">
-                    {createdTenantAccount.defaultPassword || '(Existing password)'}
+                    {createdTenantAccount.defaultPassword ||
+                      (i18n.language === 'km' ? '(ពាក្យសម្ងាត់ចាស់)' : '(Existing password)')}
                   </span>
                 </div>
               </div>
@@ -1069,7 +1145,9 @@ export function ContractsPage() {
                   className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-[#229ED9] text-white hover:bg-[#1E88E5] transition-all shadow-xs"
                 >
                   <Send className="w-3.5 h-3.5" />
-                  <span>Send via Telegram</span>
+                  <span>
+                    {i18n.language === 'km' ? 'ផ្ញើតាម Telegram' : 'Send via Telegram'}
+                  </span>
                 </a>
               )}
               <Button
@@ -1077,21 +1155,33 @@ export function ContractsPage() {
                 variant="outline"
                 icon={copiedTenantCreds ? Check : Copy}
                 onClick={() => {
-                  const msg = createdTenantAccount.shareText || `Sunrise Apartments - Room ${createdTenantAccount.roomNumber}\nTenant Portal Login:\nUsername: ${createdTenantAccount.username}\nPassword: ${createdTenantAccount.defaultPassword || '(your password)'}\nLogin Link: ${window.location.origin}/login`;
+                  const msg =
+                    createdTenantAccount.shareText ||
+                    `Sunrise Apartments - Room ${createdTenantAccount.roomNumber}\nTenant Portal Login:\nUsername: ${createdTenantAccount.username}\nPassword: ${createdTenantAccount.defaultPassword || '(your password)'}\nLogin Link: ${window.location.origin}/login`;
                   navigator.clipboard.writeText(msg);
                   setCopiedTenantCreds(true);
-                  showSuccess('Credentials copied! You can paste and send via Telegram or SMS.');
+                  showSuccess(
+                    i18n.language === 'km'
+                      ? 'បានចម្លងព័ត៌មានគណនីរួចរាល់!'
+                      : 'Credentials copied! You can paste and send via Telegram or SMS.'
+                  );
                   setTimeout(() => setCopiedTenantCreds(false), 2500);
                 }}
               >
-                {copiedTenantCreds ? 'Copied' : 'Copy for Telegram/SMS'}
+                {copiedTenantCreds
+                  ? i18n.language === 'km'
+                    ? 'បានចម្លងរួច'
+                    : 'Copied'
+                  : i18n.language === 'km'
+                  ? 'ចម្លងសម្រាប់ Telegram/SMS'
+                  : 'Copy for Telegram/SMS'}
               </Button>
               <Button
                 type="button"
                 variant="primary"
                 onClick={() => setCreatedTenantAccount(null)}
               >
-                Done
+                {i18n.language === 'km' ? 'រួចរាល់' : 'Done'}
               </Button>
             </div>
           </div>

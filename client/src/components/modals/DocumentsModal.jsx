@@ -19,7 +19,8 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import { apiRequest } from '../../utils/api.js';
 
 export function DocumentsModal({ isOpen, onClose, contract }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isKm = i18n.language === 'km';
   const { isAdmin, isStaff } = useAuth();
   const { showSuccess, showError } = useToast();
 
@@ -112,11 +113,15 @@ export function DocumentsModal({ isOpen, onClose, contract }) {
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={`Contract Documents: Room #${contract?.roomNumber} • ${contract?.tenantName}`}
+      title={
+        isKm
+          ? `ឯកសារកិច្ចសន្យា៖ បន្ទប់ #${contract?.roomNumber} • ${contract?.tenantName}`
+          : `Contract Documents: Room #${contract?.roomNumber} • ${contract?.tenantName}`
+      }
       maxWidth="max-w-xl"
       footer={
         <Button variant="secondary" onClick={onClose}>
-          {t('common.close', 'Close')}
+          {t('common.close', 'បិទ')}
         </Button>
       }
     >
@@ -128,16 +133,27 @@ export function DocumentsModal({ isOpen, onClose, contract }) {
             className="p-3 bg-surface-subtle border border-border rounded-xl space-y-3"
           >
             <span className="font-bold text-content-primary block">
-              Upload New Document (PDF, JPG, PNG &lt; 5MB)
+              {isKm
+                ? 'បញ្ចូលឯកសារថ្មី (PDF, JPG, PNG < 5MB)'
+                : 'Upload New Document (PDF, JPG, PNG < 5MB)'}
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <Select
                 value={kind}
                 onChange={(e) => setKind(e.target.value)}
                 options={[
-                  { value: 'contract', label: 'Signed Lease Agreement' },
-                  { value: 'id_copy', label: 'National ID / Passport Copy' },
-                  { value: 'other', label: 'Other Document / Photo' },
+                  {
+                    value: 'contract',
+                    label: isKm ? 'កិច្ចសន្យាជួលបន្ទប់ដែលបានចុះហត្ថលេខា' : 'Signed Lease Agreement',
+                  },
+                  {
+                    value: 'id_copy',
+                    label: isKm ? 'ច្បាប់ចម្លងអត្តសញ្ញាណប័ណ្ណ / លិខិតឆ្លងដែន' : 'National ID / Passport Copy',
+                  },
+                  {
+                    value: 'other',
+                    label: isKm ? 'ឯកសារផ្សេងៗ / រូបថតបន្ទប់' : 'Other Document / Photo',
+                  },
                 ]}
               />
               <input
@@ -156,7 +172,7 @@ export function DocumentsModal({ isOpen, onClose, contract }) {
                 loading={uploading}
                 disabled={!file}
               >
-                Upload File
+                {isKm ? 'បញ្ចូលឯកសារ' : 'Upload File'}
               </Button>
             </div>
           </form>
@@ -165,14 +181,16 @@ export function DocumentsModal({ isOpen, onClose, contract }) {
         {/* Document List */}
         <div className="space-y-2">
           <span className="font-bold text-content-primary block">
-            Stored Documents ({documents.length})
+            {isKm ? `ឯកសារដែលបានរក្សាទុក (${documents.length})` : `Stored Documents (${documents.length})`}
           </span>
 
           {loading ? (
-            <p className="text-content-muted py-4 text-center">Loading documents...</p>
+            <p className="text-content-muted py-4 text-center">
+              {isKm ? 'កំពុងផ្ទុកឯកសារ...' : 'Loading documents...'}
+            </p>
           ) : documents.length === 0 ? (
             <p className="text-content-muted py-6 text-center border border-dashed border-border rounded-lg">
-              No documents uploaded for this lease yet.
+              {isKm ? 'មិនទាន់មានឯកសារណាមួយត្រូវបានបញ្ចូលសម្រាប់កិច្ចសន្យានេះនៅឡើយទេ។' : 'No documents uploaded for this lease yet.'}
             </p>
           ) : (
             <div className="divide-y divide-border border border-border rounded-xl overflow-hidden bg-surface">

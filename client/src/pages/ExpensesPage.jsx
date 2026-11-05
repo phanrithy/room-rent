@@ -414,10 +414,19 @@ export function ExpensesPage() {
             value={roomId}
             onChange={(e) => setRoomId(e.target.value)}
             options={[
-              { value: '', label: 'Building-wide (No specific room)' },
+              {
+                value: '',
+                label:
+                  i18n.language === 'km'
+                    ? 'ទូទាំងអគារ (មិនកំណត់បន្ទប់ជាក់លាក់)'
+                    : 'Building-wide (No specific room)',
+              },
               ...rooms.map((r) => ({
                 value: String(r.id),
-                label: `Room #${r.roomNumber} (Floor ${r.floor})`,
+                label:
+                  i18n.language === 'km'
+                    ? `បន្ទប់ #${r.roomNumber} (ជាន់ទី ${r.floor})`
+                    : `Room #${r.roomNumber} (Floor ${r.floor})`,
               })),
             ]}
           />
@@ -426,7 +435,11 @@ export function ExpensesPage() {
             label={t('expenses.note')}
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="e.g. Replaced water valve on 2nd floor"
+            placeholder={
+              i18n.language === 'km'
+                ? 'ឧ. ដូរក្បាលរ៉ូប៊ីណេទឹកនៅជាន់ទី ២'
+                : 'e.g. Replaced water valve on 2nd floor'
+            }
           />
         </form>
       </Modal>

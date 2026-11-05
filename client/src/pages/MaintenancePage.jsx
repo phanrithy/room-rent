@@ -289,7 +289,11 @@ export function MaintenancePage() {
       <Modal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
-        title="Report Maintenance Issue"
+        title={
+          i18n.language === 'km'
+            ? 'រាយការណ៍អំពីបញ្ហាជួសជុល'
+            : 'Report Maintenance Issue'
+        }
         maxWidth="max-w-md"
         footer={
           <div className="flex justify-end gap-2 w-full">
@@ -301,37 +305,51 @@ export function MaintenancePage() {
               onClick={handleCreateSubmit}
               loading={creating}
             >
-              Submit Ticket
+              {i18n.language === 'km' ? 'ដាក់ពាក្យស្នើសុំ' : 'Submit Ticket'}
             </Button>
           </div>
         }
       >
         <form onSubmit={handleCreateSubmit} className="space-y-4">
           <Select
-            label="Room"
+            label={i18n.language === 'km' ? 'បន្ទប់' : 'Room'}
             value={roomId}
             onChange={(e) => setRoomId(e.target.value)}
             options={[
-              { value: '', label: 'Select Room...' },
+              {
+                value: '',
+                label: i18n.language === 'km' ? 'ជ្រើសរើសបន្ទប់...' : 'Select Room...',
+              },
               ...rooms.map((r) => ({
                 value: String(r.id),
-                label: `Room #${r.roomNumber} (Floor ${r.floor})`,
+                label:
+                  i18n.language === 'km'
+                    ? `បន្ទប់ #${r.roomNumber} (ជាន់ទី ${r.floor})`
+                    : `Room #${r.roomNumber} (Floor ${r.floor})`,
               })),
             ]}
             required
           />
 
           <Input
-            label="Issue Description"
+            label={i18n.language === 'km' ? 'ការពិពណ៌នាអំពីបញ្ហា' : 'Issue Description'}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="e.g. Air conditioner leaking water"
+            placeholder={
+              i18n.language === 'km'
+                ? 'ឧ. ម៉ាស៊ីនត្រជាក់លេចទឹក...'
+                : 'e.g. Air conditioner leaking water'
+            }
             required
           />
 
           {isStaff && (
             <MoneyInput
-              label="Estimated Cost (Optional)"
+              label={
+                i18n.language === 'km'
+                  ? 'តម្លៃប៉ាន់ស្មាន (ស្រេចចិត្ត)'
+                  : 'Estimated Cost (Optional)'
+              }
               cents={costCents}
               onChange={(c) => setCostCents(c)}
             />
@@ -343,7 +361,11 @@ export function MaintenancePage() {
       <Modal
         isOpen={!!editingItem}
         onClose={() => setEditingItem(null)}
-        title={`Update Ticket #${editingItem?.id} - Room #${editingItem?.roomNumber}`}
+        title={
+          i18n.language === 'km'
+            ? `កែប្រែសំណើ #${editingItem?.id} - បន្ទប់ #${editingItem?.roomNumber}`
+            : `Update Ticket #${editingItem?.id} - Room #${editingItem?.roomNumber}`
+        }
         maxWidth="max-w-md"
         footer={
           <div className="flex justify-end gap-2 w-full">
@@ -355,30 +377,50 @@ export function MaintenancePage() {
               onClick={handleUpdateSubmit}
               loading={updating}
             >
-              Update Ticket
+              {i18n.language === 'km' ? 'រក្សាទុកការកែប្រែ' : 'Update Ticket'}
             </Button>
           </div>
         }
       >
         <form onSubmit={handleUpdateSubmit} className="space-y-4 text-xs">
           <p className="p-3 bg-surface-subtle border border-border rounded-lg text-content-primary">
-            <span className="font-bold block mb-1">Issue:</span>
+            <span className="font-bold block mb-1">
+              {i18n.language === 'km' ? 'បញ្ហា៖' : 'Issue:'}
+            </span>
             {editingItem?.description}
           </p>
 
           <Select
-            label="Status"
+            label={t('common.status')}
             value={editStatus}
             onChange={(e) => setEditStatus(e.target.value)}
             options={[
-              { value: 'open', label: 'Open (Not started)' },
-              { value: 'in_progress', label: 'In Progress (Work started)' },
-              { value: 'done', label: 'Done (Resolved)' },
+              {
+                value: 'open',
+                label:
+                  i18n.language === 'km'
+                    ? 'រង់ចាំ (មិនទាន់ចាប់ផ្តើម)'
+                    : 'Open (Not started)',
+              },
+              {
+                value: 'in_progress',
+                label:
+                  i18n.language === 'km'
+                    ? 'កំពុងដំណើរការ (កំពុងជួសជុល)'
+                    : 'In Progress (Work started)',
+              },
+              {
+                value: 'done',
+                label:
+                  i18n.language === 'km'
+                    ? 'រួចរាល់ (បានដោះស្រាយ)'
+                    : 'Done (Resolved)',
+              },
             ]}
           />
 
           <MoneyInput
-            label="Repair Cost ($)"
+            label={i18n.language === 'km' ? 'ថ្លៃជួសជុល ($)' : 'Repair Cost ($)'}
             cents={editCostCents}
             onChange={(c) => setEditCostCents(c)}
           />
@@ -392,7 +434,9 @@ export function MaintenancePage() {
                 className="rounded border-border text-primary focus:ring-primary"
               />
               <span className="text-content-primary font-medium">
-                Automatically record as building expense under "Repair"
+                {i18n.language === 'km'
+                  ? 'កត់ត្រាដោយស្វ័យប្រវត្តិជាការចំណាយអគារក្រោមចំណាត់ថ្នាក់ "ជួសជុល"'
+                  : 'Automatically record as building expense under "Repair"'}
               </span>
             </label>
           )}

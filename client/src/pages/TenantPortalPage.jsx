@@ -277,21 +277,45 @@ export function TenantPortalPage() {
                 {/* Submitted Tenant Details Review */}
                 <div className="p-3.5 bg-surface-subtle/70 border border-border rounded-xl space-y-2 text-xs">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-content-primary block">Your Submitted Application Details:</span>
+                    <span className="font-bold text-content-primary block">
+                      {i18n.language === 'km'
+                        ? 'ព័ត៌មានពាក្យស្នើសុំរបស់អ្នក៖'
+                        : 'Your Submitted Application Details:'}
+                    </span>
                     <Button variant="ghost" size="sm" icon={Edit3} onClick={openEditProfile} className="text-primary text-[11px] p-0 h-auto">
-                      Edit
+                      {t('common.edit')}
                     </Button>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-content-secondary">
-                    <div>Applicant Name: <span className="font-semibold text-content-primary">{tenant?.name}</span></div>
-                    <div>Phone: <span className="font-mono font-semibold text-content-primary">{tenant?.phone}</span></div>
-                    <div>National ID / Passport: <span className="font-mono font-semibold text-content-primary">{tenant?.idNumber || 'Not provided'}</span></div>
-                    <div>Telegram: <span className="font-semibold text-primary">{tenant?.telegramChatId || 'Not provided'}</span></div>
+                    <div>
+                      {i18n.language === 'km' ? 'ឈ្មោះអ្នកស្នើសុំ៖ ' : 'Applicant Name: '}
+                      <span className="font-semibold text-content-primary">{tenant?.name}</span>
+                    </div>
+                    <div>
+                      {i18n.language === 'km' ? 'លេខទូរស័ព្ទ៖ ' : 'Phone: '}
+                      <span className="font-mono font-semibold text-content-primary">{tenant?.phone}</span>
+                    </div>
+                    <div>
+                      {i18n.language === 'km' ? 'អត្តសញ្ញាណប័ណ្ណ / លិខិតឆ្លងដែន៖ ' : 'National ID / Passport: '}
+                      <span className="font-mono font-semibold text-content-primary">
+                        {tenant?.idNumber || (i18n.language === 'km' ? 'មិនបានផ្តល់' : 'Not provided')}
+                      </span>
+                    </div>
+                    <div>
+                      Telegram:{' '}
+                      <span className="font-semibold text-primary">
+                        {tenant?.telegramChatId || (i18n.language === 'km' ? 'មិនបានផ្តល់' : 'Not provided')}
+                      </span>
+                    </div>
                   </div>
                   {dashboard.documents?.length > 0 && (
                     <div className="pt-1 text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-medium">
                       <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>National ID / Passport copy uploaded & attached</span>
+                      <span>
+                        {i18n.language === 'km'
+                          ? 'ច្បាប់ចម្លងអត្តសញ្ញាណប័ណ្ណ / លិខិតឆ្លងដែនត្រូវបានភ្ជាប់រួចរាល់'
+                          : 'National ID / Passport copy uploaded & attached'}
+                      </span>
                     </div>
                   )}
                 </div>
